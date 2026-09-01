@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://test-line.marble-net.com/config.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="index.css" />
+  <title>介護施設マッチング</title>
+</head>
+<body>
+  <!-- TOPページ -->
+  <div id="TOP" class="page active home-page">
+    <div class="home-page__content">
+      <div class="home-page__intro">
+        <span class="home-page__eyebrow">CARE MATCHING</span>
+        <h1 class="home__title">介護施設マッチング</h1>
+        <p class="home-page__lead">介護施設と利用者をつなぐ</p>
+      </div>
+
+      <div class="home__buttons">
+        <button onclick="go('Recruitment')" class="home__buttons__button home-card home-card--recruitment">
+          <span class="home-card__icon" aria-hidden="true">＋</span>
+          <span class="home-card__label">新規相談</span>
+        </button>
+
+        <button onclick="go('RecruitmentList')" class="home__buttons__button home-card home-card--list">
+          <span class="home-card__icon" aria-hidden="true">📋</span>
+          <span class="home-card__label">新規相談一覧</span>
+          <span class="home-card__description">相談内容を確認</span>
+        </button>
+
+        <button onclick="go('Approval')" class="home__buttons__button home-card home-card--approval">
+          <span class="home-card__icon" aria-hidden="true">✓</span>
+          <span class="home-card__label">応募者一覧</span>
+          <span class="home-card__description">応募者を確認</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="API_KEY" class="page"></div>
+  <div id="API_TOKEN" class="page"></div>
+
+  <!-- 施設募集ページ -->
+  <div id="Recruitment" class="page">
+    <div class="recruitment-form">
+      <input type="hidden" id="recruitmentID" name="recruitmentID" />
+
+      <div class="step-header">
+        <label class="list-title">利用者情報の入力</label>
+      </div>
+
+      <div class="page">
+          <label for="recruitmentCompId">事業所番号<span style="color: #dc3545;">*必須</span></label>
+          <input
+            type="text"
+            id="recruitmentCompId"
+            name="recruitmentCompId"
+            placeholder="例：1234567890"
+            required
+          />
+      </div>
+
+      <div class="form-group">
+          <label for="recruitmentCompName">事業所名<span style="color: #dc3545;">*必須</span></label>
+          <input
+            type="text"
+            id="recruitmentCompName"
+            name="recruitmentCompName"
+            placeholder="例：○○介護施設"
+            required
+          />
+      </div>
+
+      <div class="form-group">
+          <label for="recruitmentManagerName">担当者名<span style="color: #dc3545;">*必須</span></label>
+          <input
+            type="text"
+            id="recruitmentManagerName"
+            name="recruitmentManagerName"
+            placeholder="例：山田太郎"
+            required
+          />
+      </div>
+
+      <div class="form-group">
+          <label for="recruitmentName">利用者名(イニシャル) <span style="color: #dc3545;">*必須</span></label>
+          <input
+            type="text"
+            id="recruitmentName"
+            name="recruitmentName"
+            placeholder="例：YT"
+            required
+          />
+      </div>
+
+      <div class="form-group">
+          <label for="recruitmentCareLevel">利用者の介護レベル <span style="color: #dc3545;">*必須</span></label>
+          <select
+            id="recruitmentCareLevel"
+            name="recruitmentCareLevel"
+            required
+          >
+            <option value="">選択してください</option>
+            <option value="1">申請中</option>
+            <option value="2">要支援1</option>
+            <option value="3">要支援2</option>
+            <option value="4">要介護1</option>
+            <option value="5">要介護2</option>
+            <option value="6">要介護3</option>
+            <option value="7">要介護4</option>
+            <option value="8">要介護5</option>
+          </select>
+      </div>
+
+      <div class="form-group">
+          <label for="recruitmentGender">性別 <span style="color: #dc3545;">*必須</span></label>
+          <select
+            id="recruitmentGender"
+            name="recruitmentGender"
+            required
+          >
+            <option value="">選択してください</option>
+            <option value="0">男性</option>
+            <option value="1">女性</option>
+            <option value="2">その他</option>
+          </select>
+      </div>
+
+      <div class="form-group">
+          <label for="recruitmentAge">年齢 <span style="color: #dc3545;">*必須</span></label>
+          <input
+            type="number"
+            id="recruitmentAge"
+            name="recruitmentAge"
+            placeholder="例：85"
+            required
+          />
+      </div>
+
+      <div class="form-group">
+        <label for="recruitmentStartDateTime">利用予定開始日 </label>
+        <input
+          type="date"
+          id="recruitmentStartDateTime"
+          name="recruitmentStartDateTime"
+          placeholder="例：20xx/01/01"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="recruitmentFreeText">フリー入力欄</label>
+        <textarea
+          id="recruitmentFreeText"
+          name="recruitmentFreeText"
+          placeholder="例：特記事項や要望を入力してください"
+        ></textarea>
+      </div>
+
+      <!-- プロンプト作成ボタン -->
+      <button class="btn-build" onclick="generatePrompt()">プロンプト作成</button>
+
+      <!-- プロンプト表示・編集用エリア -->
+      <div class="form-group">
+        <label for="generatedPrompt">作成されたプロンプト（編集可）</label>
+        <textarea id="generatedPrompt" placeholder="プロンプト作成ボタンを押すとここに生成されます"></textarea>
+      </div>
+
+      <!-- 紹介文生成ボタン -->
+      <button id="sendBtn" class="btn-send" onclick="askGemini()">紹介文生成</button>
+      <!-- プロンプト生成 + 紹介文生成ボタン
+      <button id="sendBtn" class="btn-send" onclick="generatePrompt()">紹介文生成</button>
+      -->
+
+      <!-- 結果表示エリア -->
+      <div class="form-group">
+        <label for="resultOutput">生成された紹介文（編集可）</label>
+        <textarea id="resultOutput" placeholder="ここに生成された紹介文が表示されます"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-submit" onclick="regiRecruitment()">募集をかける</button>
+        <button type="button" class="btn btn-reset" onclick="go('TOP')">戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 募集完了ページ -->
+  <div id="RecruitmentComplete" class="page">
+    <div class="recruitment-form">
+      <div class="completion-container">
+        <div class="completion-card">
+
+          <div class="completion-icon">✓</div>
+          <h1 class="completion-title">新規相談を送信しました！</h1>
+          <p class="completion-message">通知を施設担当者へ送信します。</p>
+          <div class="completion-actions">
+            <button type="button" class="btn btn-primary" onclick="go('RecruitmentList')">募集一覧へ</button>
+            <button type="button" class="btn btn-secondary" onclick="closeMiniApp()">アプリを閉じる</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 募集一覧ページ -->
+  <div id="RecruitmentList" class="page">
+    <div class="recruitment-list-container">
+      <div class="list-header">
+        <button type="button" onclick="go('TOP')" class="btn-back">← TOPへ戻る</button>
+      </div>
+
+      <h1 class="list-title">新規相談一覧</h1>
+
+      <div class="recruitment-list" id="recruitmentListContainer">
+        <!-- 募集カードがJavaScriptで動的に挿入される -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 募集詳細ページ -->
+  <div id="RecruitmentDetail" class="page">
+    <div class="recruitment-form">
+      <div class="step-header">
+        <label class="list-title">詳細情報</label>
+      </div>
+
+      <div class="page">
+        <label>事業者番号</label>
+        <div class="detail-display" id="detailCompId">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>施設名</label>
+        <div class="detail-display" id="detailFacilityName">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>担当者名</label>
+        <div class="detail-display" id="detailTantousyaName">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>利用者名(イニシャル)</label>
+        <div class="detail-display" id="detailInitialName">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>介護レベル</label>
+        <div class="detail-display" id="detailCareLevel">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>年齢</label>
+        <div class="detail-display" id="detailAge">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>性別</label>
+        <div class="detail-display" id="detailGender">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>利用開始予定日</label>
+        <div class="detail-display" id="detailStartDate">-</div>
+      </div>
+      
+      <div class="form-group">
+        <label>紹介文</label>
+        <div class="detail-display" id="detailFreeText">-</div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-submit" onclick="go('Apply')">応募する</button>
+        <button type="button" class="btn btn-reset" onclick="go('RecruitmentList')">戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 応募ページ -->
+  <div id="Apply" class="page">
+    <div class="recruitment-list-container">
+      <div class="apply-card">
+        <!-- 募集ID,募集者LINE ID（画面には見せず、応募登録時に送信する）-->
+        <input type="hidden" id="applyRecruitmentId" name="applyRecruitmentId" />
+        <input type="hidden" id="BosyuusyaLineId" name="applyLineId" />
+        <input type="hidden" id="applydetailFreeText" name="applyFreeText" />
+        <input type="hidden" id="applydetailManagerName" name="applydetailManagerName" />
+
+        <div class="form-group">
+          <label for="applyOfficeNumber">事業所番号 <span style="color: #dc3545;">*</span></label>
+          <input
+            type="text"
+            id="applyOfficeNumber"
+            name="applyOfficeNumber"
+            placeholder="例：123456"
+            required
+          />
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-submit" onclick="regiApply()">応募する</button>
+          <button type="button" class="btn btn-reset" onclick="go('RecruitmentDetail')">戻る</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 応募完了ページ -->
+  <div id="ApplyComp" class="page">
+    <div class="recruitment-list-container">
+      <div class="completion-container">
+        <div class="completion-card">
+          <div class="completion-icon">✓</div>
+          <h1 class="completion-title">応募が完了しました！</h1>
+          <p class="completion-message">他の募集情報を確認するには、<br>
+            募集一覧へお戻りください。</p>
+          <div class="completion-actions">
+            <button type="button" class="btn btn-primary" onclick="go('RecruitmentList')">募集一覧へ</button>
+            <button type="button" class="btn btn-secondary" onclick="closeMiniApp()">ミニアプリを閉じる</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 承認ページ -->
+  <div id="Approval" class="page">
+    <div class="recruitment-list-container">
+      <div class="list-header">
+        <button onclick="go('TOP')" class="btn-back">← TOPへ戻る</button>
+        <h1 class="list-title">応募者承認</h1>
+      </div>
+
+      <div class="recruitment-list" id="approvalListContainer">
+        <!-- 応募者カードがJavaScriptで動的に挿入される -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 承認詳細ページ -->
+  <div id="ApprovalDetail" class="page">
+    <div class="recruitment-form">
+      <div class="step-header">
+        <label class="list-title">応募施設 詳細情報</label>
+      </div>
+
+      <!-- 募集ID,募集者LINE ID（画面には見せず、応募登録時に送信する）-->
+      <input type="hidden" id="ApprovalRecruitmentId" name="ApprovalRecruitmentId" />
+      <input type="hidden" id="ApprovalLineId" name="ApprovalLineId" />
+      <input type="hidden" id="ApprovalID" name="ApprovalID" />
+
+      <div class="page">
+        <label>事業者番号</label>
+        <div class="detail-display" id="approvalDetailFacilityId">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>施設名</label>
+        <div class="detail-display" id="approvalDetailFacilityName">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>担当者名</label>
+        <div class="detail-display" id="approvalDetailTantousyaName">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>電話番号</label>
+        <div class="detail-display" id="approvalDetailPhoneNumber">-</div>
+      </div>
+
+      <div class="form-group">
+        <label>住所</label>
+        <div class="detail-display" id="approvalDetailAddress">-</div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-submit" onclick="changeFlag()">承認する</button>
+        <button type="button" class="btn btn-reset" onclick="go('Approval')">戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 承認完了ページ -->
+  <div id="ApprovalComp" class="page">
+    <div class="recruitment-list-container">
+      <div class="completion-container">
+        <div class="completion-card">
+          <div class="completion-icon">✓</div>
+          <h1 class="completion-title">承認が完了しました！</h1>
+          <p class="completion-message">応募者の承認手続きを完了しました。</p>
+          <div class="completion-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeMiniApp()">ミニアプリを閉じる</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ----------------------
+    // LIFF初期化とページ遷移処理
+    // ----------------------
+    window.onload = async () => {
+      const script = document.createElement("script");
+      script.src = "https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js";
+      document.head.appendChild(script);
+
+      script.onload = async () => {
+        // LIFF IDはLIFF URLの末尾に表示されるIDを使用
+        await liff.init({ liffId: "2009866730-52c8hXB5" });
+        await getUserData();
+
+        // URLクエリに"page"パラメータがあればそのページを表示
+        const params = new URLSearchParams(window.location.search);
+        const page = params.get("page");
+
+        if (page) {
+          go(page);
+        } else {
+          go("TOP");
+        }
+      };
+    };
+
+    // ----------------------
+    // APIトークン取得
+    // ----------------------
+    let API_TOKEN = "";
+
+    // DB API用トークンを取得し、画面に表示して保存する
+    async function getDB_tk(){
+      const form = new FormData();
+      form.append("action", "token");
+      form.append("db_ApiKey", DB_API_KEY);
+
+      const response = await fetch(TOKEN_API, { method: "POST", body: form });
+      const j = await response.json();
+      document.getElementById("API_TOKEN").textContent = j.db_token;
+      API_TOKEN = j.db_token;
+      return j.db_token;
+    }
+
+    // ----------------------
+    // 初期化処理：ページ読み込み時に募集一覧と応募一覧を取得して表示する
+    // ----------------------
+    window.addEventListener('load', async () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('recruitmentID')) {
+        await setRecruitmentDetail();
+      }else if (params.get('ApprovalID')) {
+        await setApprovalDetail();
+      }
+      await loadRecruitmentData();
+      await loadApplyData();
+      await renderApplyList();
+    });
+
+    // ----------------------
+    // 画面切り替え処理
+    // ----------------------
+    function go(id) {
+      // 全てのページ要素を非表示にする
+      document.querySelectorAll(".page").forEach(p => {
+        p.style.display = "none";
+      });
+
+      // クリックまたはクエリで指定されたページを表示
+      const target = document.getElementById(id);
+      if (target) {
+        target.style.display = "block";
+      }
+    }
+
+    // ----------------------
+    // LIFF内でミニアプリを閉じる
+    // ----------------------
+    function closeMiniApp() {
+      if (liff.isInClient()) {
+        liff.closeWindow();
+      } else {
+        alert("ブラウザでは実行できません");
+      }
+    }
+
+    // ----------------------
+    // ユーザー情報の取得
+    // ----------------------
+    let UserData = [];
+
+    async function getUserData() {
+      const profile = await liff.getProfile();
+
+      try {
+        await getDB_tk();
+
+        const form = new FormData();
+        form.append("action", "getUserData");
+        form.append("db_token", API_TOKEN);
+        form.append("db_ApiKey", DB_API_KEY);
+        form.append("LineID", profile.userId);
+
+        const response = await fetch(DEMO_API, { method: "POST", body: form });
+        const data = await response.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          UserData = data;
+          const userData = UserData[0];
+          //募集ページの事業者番号、事業所名、担当者名を自動入力
+          document.getElementById("recruitmentCompId").value = userData.EM_COMP_ID || "";
+          document.getElementById("recruitmentCompName").value = userData.COMP_NAME || "";
+          document.getElementById("recruitmentManagerName").value =userData.NAME || "";
+          //応募ページの担当者名を自動入力
+          document.getElementById("applydetailManagerName").value =userData.NAME || "";
+        } else {
+          console.error("ユーザー情報の取得に失敗しました。", data);
+        }
+      } catch (error) {
+        UserData = [];
+        console.error("ユーザー情報の取得中にエラーが発生しました。", error);
+      }      
+    }
+
+    // ----------------------
+    // 募集情報をDBに保存する処理
+    // ----------------------
+    async function regiRecruitment() {
+      await getDB_tk();
+      const profile = await liff.getProfile();
+
+      const recruitmentCompIdElement = document.getElementById("recruitmentCompId");
+      const recruitmentCompNameElement = document.getElementById("recruitmentCompName");
+      const recruitmentManagerNameElement = document.getElementById("recruitmentManagerName");
+      const recruitmentNameElement = document.getElementById("recruitmentName");
+      const recruitmentCareLevelElement = document.getElementById("recruitmentCareLevel");
+      const recruitmentGenderElement = document.getElementById("recruitmentGender");
+      const recruitmentAgeElement = document.getElementById("recruitmentAge");
+      const recruitmentStartDateElement = document.getElementById("recruitmentStartDateTime");
+      const recruitmentFreeTextElement = document.getElementById("recruitmentFreeText");
+      const recruitmentServiceTypeElement = document.getElementById("recruitmentServiceType");
+      const recruitmentTimeSlotElement = document.getElementById("recruitmentTimeSlot") || '';
+      const recruitmentResultOutput = document.getElementById("resultOutput") || '';
+
+      const form = new FormData();
+      form.append("action", "Bosyuu");
+      form.append("db_token", API_TOKEN);
+      form.append("db_ApiKey", DB_API_KEY);
+
+      form.append("recruitmentCompId", recruitmentCompIdElement.value);
+      form.append("recruitmentCompName", recruitmentCompNameElement.value);
+      form.append("recruitmentManagerName", recruitmentManagerNameElement.value);
+      form.append("recruitmentName", recruitmentNameElement.value);
+      form.append("recruitmentCareLevel", recruitmentCareLevelElement.value);
+      form.append("recruitmentGender", recruitmentGenderElement.value);
+      form.append("recruitmentAge", recruitmentAgeElement.value);
+      form.append("recruitmentStartDateTime", recruitmentStartDateElement.value);
+      form.append("recruitmentFreeText", recruitmentFreeTextElement.value);
+      form.append("recruitmentResultOutput", recruitmentResultOutput.value);
+      form.append("LineID", profile.userId);
+
+      const response = await fetch(DEMO_API, { method: "POST", body: form });
+      const j = await response.json();
+
+      // APIのレスポンスで帰ってきた場合、募集情報を再取得して募集完了ページに遷移する
+      if (j && j.status === "Bosyuu") {
+        await loadRecruitmentData();
+        // 募集通知を送信する処理
+        const response = await fetch(BosyuuTuuchi_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            LineId: profile.userId,
+            Syoukaibun: recruitmentResultOutput.value,
+            REQ_ID: j.REQ_ID
+          })
+        });
+        go('RecruitmentComplete');
+      }
+    }
+
+    // 募集情報をDBから取得して画面用データとして保持する処理
+    async function loadRecruitmentData() {
+      try {
+        await getDB_tk();
+
+        const form = new FormData();
+        form.append("action", "BosyuuIchiranHyouzi");
+        form.append("db_token", API_TOKEN);
+        form.append("db_ApiKey", DB_API_KEY);
+
+        const response = await fetch(DEMO_API, { method: "POST", body: form });
+        const data = await response.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          recruitmentData = data;
+        } else {
+          console.error("募集情報の取得に失敗しました。", data);
+        }
+      } catch (error) {
+        recruitmentData = [sampleRecruitmentItem];
+        console.error("募集情報の取得中にエラーが発生しました。", error);
+      }
+
+      renderRecruitmentList();
+    }
+
+    // 募集情報の利用開始予定日をフォーマットする処理
+    function formatPlannedDate(dateText) {
+      if (!dateText) return '-';
+      const dateString = dateText.toString().slice(0, 10);
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return dateString;
+      return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' });
+    }
+
+    // 介護レベルを値から変換
+    function formatSERVICE_TYPE(value) {
+      if (value === '0') return '申請中';
+      if (value === '1') return '要支援1';
+      if (value === '2') return '要支援2';
+      if (value === '11') return '要介護1';
+      if (value === '12') return '要介護2';
+      if (value === '13') return '要介護3';
+      if (value === '14') return '要介護4';
+      if (value === '15') return '要介護5';
+      return '-';
+    }
+
+    // 性別を値から変換
+    function formatGender(value) {
+      if (value === '0') return '男性';
+      if (value === '1') return '女性';
+      if (value === '2') return 'その他';
+      return '-';
+    }
+
+    function renderRecruitmentList() {
+      const container = document.getElementById('recruitmentListContainer');
+      container.innerHTML = '';
+
+      if (!Array.isArray(recruitmentData) || recruitmentData.length === 0) {
+        container.innerHTML = '<div class="empty-message">募集情報がありません</div>';
+        return;
+      }
+
+      recruitmentData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'recruitment-card';
+
+        // 募集情報一覧のカードに表示する内容を設定
+        card.innerHTML = `
+          <div class="card-body">
+            <div class="card-row">
+              <span class="card-label">介護レベル:</span>
+              <span class="card-value">${formatSERVICE_TYPE(item.SERVICE_TYPE_ID)}</span>
+            </div>
+            <div class="card-row">
+              <span class="card-label">年齢:</span>
+              <span class="card-value">${item.AGE || '-'}</span>
+            </div>
+            <div class="card-row">
+              <span class="card-label">性別:</span>
+              <span class="card-value">${formatGender(item.SEX)}</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            詳細を表示 →
+          </div>
+        `;
+
+        card.addEventListener('click', () => openRecruitmentDetail(item));
+        container.appendChild(card);
+      });
+    }
+
+    // 募集情報の詳細表示ページで表示する内容
+    // item.xxはDBのカラム名に対応
+    function openRecruitmentDetail(item) {
+      // 募集ID, 募集者LINE IDを応募ページに渡すためにhidden inputに設定
+      document.getElementById('applyRecruitmentId').value = item.REQ_ID;
+      document.getElementById('BosyuusyaLineId').value = item.CREATE_BY;
+      document.getElementById('applydetailFreeText').value = item.COMMENT || '-';
+
+      document.getElementById('detailFacilityName').textContent = item.COMP_NAME;
+      document.getElementById('detailTantousyaName').textContent = item.NAME;
+      document.getElementById('detailCompId').textContent = item.COMP_ID;
+      document.getElementById('detailInitialName').textContent = item.USER_NAME;
+      document.getElementById('detailCareLevel').textContent = formatSERVICE_TYPE(item.SERVICE_TYPE_ID);
+      document.getElementById('detailAge').textContent = item.AGE;
+      document.getElementById('detailGender').textContent = formatGender(item.SEX);
+      document.getElementById('detailStartDate').textContent = formatPlannedDate(item.START);
+      document.getElementById('detailFreeText').textContent = item.COMMENT || '-';
+
+      go('RecruitmentDetail');
+    }
+
+    // ----------------------
+    // 募集通知のリンクから遷移した場合、詳細画面に表示する内容を設定する処理
+    // ----------------------
+    async function setRecruitmentDetail() {
+      await getDB_tk();
+
+      const params = new URLSearchParams(window.location.search);
+      const recruitmentID = params.get("recruitmentID");
+      const form = new FormData();
+
+      form.append("action", "BosyuuSyousaiHyouzi");
+      form.append("db_token", API_TOKEN);
+      form.append("db_ApiKey", DB_API_KEY);
+      form.append("recruitmentID", recruitmentID);
+
+      const response = await fetch(DEMO_API, { method: "POST", body: form });
+      const data = await response.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        openRecruitmentDetail(data[0]);
+      }
+    }
+
+    // ----------------------
+    // 応募情報をDBに保存する処理
+    // ----------------------
+    async function regiApply() {
+      await getDB_tk();
+
+      const profile = await liff.getProfile();
+      const recruitmentIdInput = document.getElementById("applyRecruitmentId");
+      const bosyuusyaLineIdInput = document.getElementById("BosyuusyaLineId");
+      const applyOfficeNumberElement = document.getElementById("applyOfficeNumber");
+      const recruitmentResultOutput = document.getElementById("applydetailFreeText");
+      const managerNameInput = document.getElementById("applydetailManagerName");
+      const form = new FormData();
+
+      form.append("action", "Oubo");
+      form.append("db_token", API_TOKEN);
+      form.append("db_ApiKey", DB_API_KEY);
+      form.append("recruitmentID", recruitmentIdInput.value);
+      form.append("ManagerName", managerNameInput.value);
+      form.append("applyOfficeNumber", applyOfficeNumberElement.value);
+      form.append("LineID", profile.userId);
+
+      const response = await fetch(DEMO_API, { method: "POST", body: form });
+      const j = await response.json();
+
+      if (j && j.status === "Oubo") {
+        await loadApplyData();
+        // 応募通知を送信する処理
+        const response = await fetch(OuboTuuchi_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            BosyuusyaLineId: bosyuusyaLineIdInput.value,
+            BosyuuInfo: recruitmentResultOutput.value,
+            RES_ID: j.RES_ID
+          })
+        });
+        go('ApplyComp');
+      }
+    }
+
+    let applyData = [];
+
+    //----------------------
+    // 応募情報をDBから取得して画面用データとして保持する処理
+    //----------------------
+    async function loadApplyData() {
+      try {
+        await getDB_tk();
+        const profile = await liff.getProfile();
+
+        const form = new FormData();
+        form.append("action", "OuboIchiranHyouzi");
+        form.append("db_token", API_TOKEN);
+        form.append("db_ApiKey", DB_API_KEY);
+        form.append("LineID", profile.userId);
+
+        const response = await fetch(DEMO_API, { method: "POST", body: form });
+        const data = await response.json();
+
+        if (Array.isArray(data)) {
+          applyData = data;
+        } else {
+          applyData = [];
+          console.error("応募情報の取得に失敗しました", data);
+        }
+      } catch (error) {
+        applyData = [];
+        console.error("応募情報の取得中にエラーが発生しました", error);
+      }
+    }
+
+    let selectedApprovalItem = null;
+
+    // ----------------------
+    // 応募一覧を画面に描画する処理
+    // ----------------------
+    async function renderApplyList() {
+      const container = document.getElementById('approvalListContainer');
+      container.innerHTML = '';
+
+      if (!Array.isArray(applyData) || applyData.length === 0) {
+        container.innerHTML = '<div class="empty-message">応募情報がありません</div>';
+        return;
+      }
+
+      applyData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'recruitment-card';
+        card.onclick = () => openApprovalDetail(item);
+
+        card.innerHTML = `
+          <div class="card-header">
+            <h3 class="card-title">${item.COMP_NAME || '-'}</h3>
+          </div>
+            <div class="card-row">
+              <span class="card-label">担当者名</span>
+              <span class="card-value">${item.RES_NAME || '-'}</span>
+            </div>
+            <div class="card-row">
+              <span class="card-label">住所</span>
+              <span class="card-value">${item.ADDRESS1 + item.ADDRESS2 + item.ADDRESS3 || '-'}</span>
+            </div>
+          </div>
+          <div class="card-footer">詳細を表示 →</div>
+        `;
+
+        card.addEventListener('click', () => openApprovalDetail(item));
+        container.appendChild(card);
+      });
+    }
+
+    // ----------------------
+    // 選択した応募者の詳細ページを表示する処理
+    // ----------------------
+    function openApprovalDetail(item) {
+      selectedApprovalItem = item;
+      // 承認時に使用
+      document.getElementById('ApprovalRecruitmentId').value = item.REQ_ID;
+      document.getElementById('ApprovalLineId').value = item.OUBOSYA_LINE_ID;
+
+      document.getElementById('approvalDetailFacilityId').textContent = item.SISETU_COMP_ID;
+      document.getElementById('approvalDetailFacilityName').textContent = item.SISETU_COMP_NAME;
+      document.getElementById('approvalDetailTantousyaName').textContent = item.RES_NAME;
+      document.getElementById('approvalDetailPhoneNumber').textContent = item.PHONE;
+      document.getElementById('approvalDetailAddress').textContent = item.ADDRESS1 + item.ADDRESS2 + item.ADDRESS3;
+
+      go('ApprovalDetail');
+    }
+
+    // ----------------------
+    // 応募通知のリンクから遷移した場合、詳細画面に表示する内容を設定する処理
+    // ----------------------
+    async function setApprovalDetail() {
+      await getDB_tk();
+
+      const params = new URLSearchParams(window.location.search);
+      const ApprovalID = params.get("ApprovalID");
+      const form = new FormData();
+
+      form.append("action", "OuboSyousaiHyouzi");
+      form.append("db_token", API_TOKEN);
+      form.append("db_ApiKey", DB_API_KEY);
+      form.append("ApprovalID", ApprovalID);
+
+      const response = await fetch(DEMO_API, { method: "POST", body: form });
+      const data = await response.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        openApprovalDetail(data[0]);
+      }
+    }
+
+    // ----------------------
+    // 応募者を承認し、募集・応募テーブルのフラグを更新する
+    // ----------------------
+    async function changeFlag() {
+      await getDB_tk();
+
+      const form = new FormData();
+      const profile = await liff.getProfile();
+      const ApprovalRecruitmentId = document.getElementById("ApprovalRecruitmentId");
+      const ApprovalLineId = document.getElementById("ApprovalLineId");
+
+      form.append("action", "changeFlag");
+      form.append("db_token", API_TOKEN);
+      form.append("db_ApiKey", DB_API_KEY);
+      form.append("recruitmentID", ApprovalRecruitmentId.value);
+      form.append("LineID", profile.userId);
+
+      const response = await fetch(DEMO_API, { method: "POST", body: form });
+      const j = await response.json();
+
+      if (j && j.status === "changeFlag") {
+        await loadRecruitmentData();
+        await loadApplyData();
+        await renderApplyList();
+
+        // 応募通知を送信する処理
+        const response = await fetch(SyouninTuuchi_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            OubosyaLineId: ApprovalLineId.value,
+            CompName: selectedApprovalItem.SISETU_COMP_NAME,
+            TantousyaName: selectedApprovalItem.RES_NAME,
+            CompPhoneNumber: selectedApprovalItem.PHONE,
+            CompAddress: selectedApprovalItem.ADDRESS1 + selectedApprovalItem.ADDRESS2 + selectedApprovalItem.ADDRESS3
+          })
+        });
+        go('ApprovalComp');
+      }
+    }
+
+    // ----------------------
+    // 日付のフォーマット整形関数 (YYYY-MM-DD -> YYYY/MM/DD)
+    // ----------------------
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        return dateStr.replace(/-/g, '/');
+    }
+
+    // ----------------------
+    // プロンプト生成処理
+    // ----------------------
+    function generatePrompt() {
+        const facilityName = document.getElementById('recruitmentCompName').value.trim();
+        const maxLength = 150;
+        // const service = document.getElementById('service').value;
+        const careLevel = formatSERVICE_TYPE(document.getElementById('recruitmentCareLevel').value);
+        const age = document.getElementById('recruitmentAge').value.trim();
+        const gender = formatGender(document.getElementById('recruitmentGender').value);
+        // const wheelchair = document.getElementById('wheelchair').value;
+        const startDate = formatDate(document.getElementById('recruitmentStartDateTime').value);
+        const notes = document.getElementById('recruitmentFreeText').value.trim();
+
+        // 固定文の作成
+        let promptText = `あなたは高齢者介護施設「${facilityName}」のケアマネジャーです。\n`;
+        promptText += `他の施設に介護保険の利用者を紹介する文章を${maxLength}文字以内で作成してください。\n`;
+        promptText += `先頭60文字以内に「施設名」「要介護度」「年齢」「性別」を含めてください。\n`
+        promptText += `LINEミニアプリへの投稿用です。募集に対する応募はLINEミニアプリ内で行われます。\n`;
+        promptText += `出力した文章の文字数をカウントして制限以内に収めてください。カウントした文字数の出力は要りません。\n`;
+        promptText += `必要な情報がすべて含まれていれば、文字数は少ない方が望ましいです。\n\n`;
+        // 可変項目の追加
+        // promptText += `希望サービス：${service}\n`;
+        promptText += `要介護度：${careLevel}\n`;
+        if (age) promptText += `年齢${age}才\n`;
+        promptText += `${gender}\n`;
+
+        // 注記ルールに基づく条件付き追加
+        // if (wheelchair && wheelchair !== '無し') {
+        //     promptText += `車椅子：${wheelchair}\n`;
+        // }
+        if (startDate) {
+            promptText += `希望利用開始日${startDate}\n`;
+        }
+        if (notes && notes !== '無し') {
+            promptText += `希望サービス内容・特記事項：${notes}\n`;
+        }
+
+        document.getElementById('generatedPrompt').value = promptText.trim();
+
+        // AI呼び出し 後々コメントアウトを外す
+        // askGemini();
+    }
+
+    //----------------------
+    // ai.html を参考にしたAI呼び出し処理
+    //----------------------
+    async function askGemini() {
+        const promptInput = document.getElementById('generatedPrompt');
+        const sendBtn = document.getElementById('sendBtn');
+        const resultOutput = document.getElementById('resultOutput');
+        
+        const promptText = promptInput.value.trim();
+        
+        // 入力チェック
+        if (!promptText) {
+            alert('プロンプトが作成されていないか、空欄です。');
+            return;
+        }
+        
+        // UIをローディング状態にする（連打防止）
+        promptInput.disabled = true;
+        sendBtn.disabled = true;
+        resultOutput.classList.add('loading');
+        resultOutput.value = '考え中...';
+        
+        try {
+            const serverUrl = AI_API; 
+            
+            // Fetch API を使って非同期でPOSTリクエストを送信
+            const response = await fetch(serverUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: promptText })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`サーバーエラー: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // 結果を編集可能なテキストボックスに反映
+            resultOutput.classList.remove('loading');
+            resultOutput.value = data.reply;
+            
+        } catch (error) {
+            console.error('エラーが発生しました:', error);
+            resultOutput.classList.remove('loading');
+            resultOutput.value = '通信エラーが発生しました。時間をおいて再度お試しください。';
+        } finally {
+            // UIを元に戻す
+            promptInput.disabled = false;
+            sendBtn.disabled = false;
+        }
+    }
+  </script>
+</body>
+</html>

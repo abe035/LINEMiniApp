@@ -1,0 +1,1064 @@
+.page{
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #21433b;
+  background: #effaf2;
+}
+
+.home-page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  background-color: #effaf2;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 25%, transparent 25%), linear-gradient(315deg, rgba(214, 241, 221, 0.55) 25%, transparent 25%);
+  background-position: 0 0, 24px 24px;
+  background-size: 48px 48px;
+}
+
+.home-page::before,
+.home-page::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.home-page::before {
+  width: 230px;
+  height: 230px;
+  top: -90px;
+  right: -70px;
+  background: rgba(181, 228, 193, 0.5);
+}
+
+.home-page::after {
+  width: 170px;
+  height: 170px;
+  bottom: -65px;
+  left: -55px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.home-page__content {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 32px, 560px);
+  margin: 0 auto;
+  padding: 56px 0 48px;
+  box-sizing: border-box;
+}
+
+.home-page__intro {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.home-page__eyebrow {
+  color: #4d9d77;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.home__title {
+  margin: 10px 0 8px;
+  color: #21433b;
+  font-size: clamp(1.8rem, 7vw, 2.8rem);
+  line-height: 1.25;
+  text-align: center;
+}
+
+.home-page__lead {
+  margin: 0;
+  color: #6b8c7c;
+  font-size: 0.95rem;
+}
+
+.home__buttons {
+  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.home__buttons__button {
+  min-height: 164px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 7px;
+  text-align: left;
+  user-select: none;
+  border: 1px solid rgba(50, 125, 91, 0.14);
+  padding: 24px;
+  font-family: inherit;
+  line-height: 1.4;
+  border-radius: 24px;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.home-card:hover,
+.home-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 26px rgba(55, 118, 83, 0.16);
+}
+
+.home-card:focus-visible {
+  outline: 3px solid rgba(54, 150, 100, 0.35);
+  outline-offset: 3px;
+}
+
+.home-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #287c59;
+  font-size: 1.55rem;
+  font-weight: 600;
+}
+
+.home-card__label {
+  color: #21433b;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.home-card__description {
+  color: #5f8271;
+  font-size: 1.4rem;
+}
+
+.home-card--recruitment { background: #d9f2df; }
+.home-card--list { background: #e6f6e9; }
+.home-card--approval { background: #d2eedc; }
+
+@media screen and (max-width: 600px) {
+  html {
+    font-size: 12px;
+  }
+
+  .home-page__content {
+    width: min(100% - 24px, 430px);
+    padding-top: 42px;
+  }
+
+  .home__buttons__button {
+    min-height: 145px;
+    padding: 18px;
+  }
+}
+
+@media screen and (max-width: 930px) {
+  .home__buttons {
+    flex-direction: unset;
+  }
+}
+
+/* Recruitment Form Styles */
+.recruitment-form {
+  max-width: 720px;
+  margin: 24px auto;
+  padding: 32px 28px;
+  background-color: #ffffff;
+  border: 1px solid #edf2f5;
+  border-radius: 24px;
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+}
+
+.recruitment-form .step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.recruitment-form .form-group {
+  margin-bottom: 20px;
+}
+
+.recruitment-form .form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 2rem;
+  color: #333333;
+}
+
+.recruitment-form .form-group input,
+.recruitment-form .form-group select,
+.recruitment-form .form-group textarea {
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid #d9dce0;
+  border-radius: 18px;
+  font-size: 1.6rem;
+  color: #222222;
+  box-sizing: border-box;
+  background-color: #fbfcfd;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recruitment-form .form-group input:focus,
+.recruitment-form .form-group select:focus,
+.recruitment-form .form-group textarea:focus {
+  outline: none;
+  border-color: #00b900;
+  box-shadow: 0 0 0 4px rgba(0, 185, 0, 0.12);
+}
+
+.recruitment-form .form-group textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.recruitment-form .form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+
+.recruitment-form .form-actions .btn {
+  flex: 1;
+  min-width: 140px;
+  border-radius: 16px;
+  font-size: 1.55rem;
+  padding: 16px 22px;
+}
+
+.recruitment-form .form-actions .btn-submit {
+  background-color: #00b900;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 10px 24px rgba(0, 185, 0, 0.18);
+}
+
+.recruitment-form .form-actions .btn-reset {
+  background-color: #f8f9fa;
+  color: #333333;
+  border: 1px solid #d9dce0;
+}
+
+.recruitment-form .form-actions .btn-reset:hover {
+  background-color: #eceeef;
+}
+
+@media screen and (max-width: 700px) {
+  .recruitment-form {
+    padding: 24px 18px;
+  }
+
+  .recruitment-form .form-title {
+    font-size: 2rem;
+  }
+
+  .recruitment-form .form-group label,
+  .recruitment-form .form-group input,
+  .recruitment-form .form-group select,
+  .recruitment-form .form-group textarea {
+    font-size: 1.4rem;
+  }
+
+  .recruitment-form .form-group input,
+  .recruitment-form .form-group select,
+  .recruitment-form .form-group textarea {
+    padding: 14px 16px;
+  }
+
+  .recruitment-form .form-actions .btn {
+    font-size: 1.4rem;
+  }
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="date"]:focus,
+.form-group input[type="time"]:focus,
+.form-group textarea:focus,
+.recruitment-form .form-group input:focus,
+.recruitment-form .form-group select:focus,
+.recruitment-form .form-group textarea:focus,
+.apply-card .form-group input:focus,
+.apply-card .form-group select:focus,
+.apply-card .form-group textarea:focus {
+  outline: none;
+  border-color: #4d9d77;
+  box-shadow: 0 0 0 4px rgba(77, 157, 119, 0.14);
+}
+
+.form-actions,
+.recruitment-form .form-actions,
+.apply-card .form-actions,
+.completion-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 26px;
+  flex-wrap: wrap;
+}
+
+.btn,
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  min-height: 46px;
+  padding: 12px 18px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-submit,
+.btn-primary {
+  background: #4d9d77;
+  border-color: #4d9d77;
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(77, 157, 119, 0.2);
+}
+
+.btn-submit:hover,
+.btn-primary:hover {
+  background: #287c59;
+  border-color: #287c59;
+}
+
+.btn-reset,
+.btn-secondary {
+  color: #477161;
+  background: #f5fbf6;
+  border: 1px solid #c9e3d0;
+  box-shadow: none;
+}
+
+.btn-reset:hover,
+.btn-secondary:hover {
+  color: #21433b;
+  background: #e4f4e8;
+}
+
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.list-title,
+.recruitment-form .form-title,
+.apply-card .form-title,
+.completion-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #21433b;
+}
+
+/* Apply Form Styles - LINE Design */
+.apply-card {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2.5rem;
+  max-width: 620px;
+  margin: 0 auto 3rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #edf2f5;
+}
+
+.apply-card .form-title {
+  font-size: 3.2rem;
+  margin-bottom: 2rem;
+  color: #111111;
+}
+
+.apply-card .form-group {
+  margin-bottom: 1.75rem;
+}
+
+.apply-card .form-group label {
+  color: #21433b;
+  font-size: 1.5rem;
+  margin-bottom: 0.9rem;
+  font-weight: 700;
+}
+
+.apply-card .weekday-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.apply-card .weekday-checkboxes label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.4rem;
+  min-width: 72px;
+  flex: 1 1 90px;
+  padding: 6px 4px;
+}
+
+.apply-card .weekday-checkboxes input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+}
+
+.apply-card .form-group input,
+.apply-card .form-group select,
+.apply-card .form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #c9e3d0;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  color: #21433b;
+  box-sizing: border-box;
+  background: #f8fcf9;
+}
+
+.apply-card .form-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2.5rem;
+}
+
+.apply-card .btn {
+  flex: 1;
+  min-width: 140px;
+  font-size: 0.95rem;
+  padding: 12px 18px;
+  border-radius: 12px;
+}
+
+.apply-card .btn-submit {
+  background: #4d9d77;
+  border-color: #4d9d77;
+  box-shadow: 0 10px 22px rgba(77, 157, 119, 0.2);
+}
+
+.apply-card .btn-reset {
+  color: #477161;
+  background: #f5fbf6;
+  border: 1px solid #c9e3d0;
+}
+
+.apply-card .btn-reset:hover {
+  color: #21433b;
+  background: #e4f4e8;
+}
+
+@media screen and (max-width: 700px) {
+  .apply-card {
+    padding: 1.8rem;
+  }
+
+  .apply-card .form-title {
+    font-size: 2.5rem;
+  }
+
+  .apply-card .form-group label,
+  .apply-card .form-group input,
+  .apply-card .form-group select,
+  .apply-card .form-group textarea {
+    font-size: 1.8rem;
+  }
+
+  .apply-card .weekday-checkboxes label {
+    font-size: 1.6rem;
+  }
+
+  .apply-card .weekday-checkboxes label {
+    font-size: 1.6rem;
+  }
+
+  .apply-card .btn {
+    font-size: 1.7rem;
+  }
+}
+/* Completion Page Styles - LINE Design */
+.completion-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  background: transparent;
+  min-height: auto;
+}
+
+.completion-card {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+  text-align: center;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.completion-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #4d9d77;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: #ffffff;
+  margin: 0 auto 20px auto;
+  box-shadow: 0 10px 22px rgba(77, 157, 119, 0.2);
+  animation: scaleIn 0.4s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.completion-title {
+  font-size: clamp(1.7rem, 5vw, 2.1rem);
+  font-weight: 700;
+  color: #21433b;
+  margin: 0 0 18px 0;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+
+.completion-message {
+  font-size: 1.25rem;
+  color: #6b8c7c;
+  text-align: center;
+  line-height: 1.7;
+  margin: 0 0 28px 0;
+  max-width: 100%;
+}
+
+.completion-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+.completion-actions .btn,
+.completion-actions .btn-primary,
+.completion-actions .btn-secondary {
+  width: 100%;
+  padding: 12px 18px;
+  min-width: 0;
+}
+
+.btn-primary,
+.btn-secondary {
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+@media screen and (max-width: 480px) {
+  .completion-icon {
+    width: 70px;
+    height: 70px;
+    font-size: 40px;
+  }
+
+  .completion-title {
+    font-size: 2rem;
+  }
+
+  .completion-message {
+    font-size: 1.4rem;
+    margin-bottom: 24px;
+  }
+
+  .completion-actions .btn,
+  .completion-actions .btn-primary,
+  .completion-actions .btn-secondary {
+    padding: 14px 16px;
+    font-size: 1.45rem;
+  }
+}
+
+/* Recruitment List Styles - LINE Design */
+.recruitment-list-container {
+  padding: 2rem;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 3rem;
+  gap: 1.5rem;
+}
+
+.btn-back {
+  padding: 1rem 1.5rem;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 2.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+  background-color: #f0f0f0;
+  border-color: #999;
+}
+
+.list-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.recruitment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Recruitment Card */
+.recruitment-card {
+  background-color: white;
+  border-radius: 0.8rem;
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8e8e8;
+}
+
+.recruitment-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  border-color: #00B900;
+}
+
+.recruitment-card:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+  flex: 1;
+}
+
+.card-body {
+  margin-bottom: 1.5rem;
+}
+
+.card-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.card-label {
+  color: #666666;
+  font-weight: 500;
+  min-width: 10rem;
+}
+
+.card-value {
+  color: #111111;
+  font-weight: 500;
+}
+
+.card-footer {
+  text-align: right;
+  font-size: 1.25rem;
+  color: #00B900;
+  font-weight: 600;
+}
+
+/* Recruitment Detail Page */
+.detail-display {
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid #d9dce0;
+  border-radius: 18px;
+  font-size: 1.6rem;
+  color: #222222;
+  box-sizing: border-box;
+  background-color: #fbfcfd;
+  font-family: inherit;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+#RecruitmentDetail .form-actions {
+  margin-top: 28px;
+}
+
+#RecruitmentDetail .btn-submit {
+  background-color: #00b900;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 10px 24px rgba(0, 185, 0, 0.18);
+}
+
+#RecruitmentDetail .btn-reset {
+  background-color: #f8f9fa;
+  color: #333333;
+  border: 1px solid #d9dce0;
+}
+
+/* Shared application screens: match the TOP page visual language. */
+body {
+  min-height: 100vh;
+  background: #effaf2;
+}
+
+.page:not(.home-page) {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-color: #effaf2;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 25%, transparent 25%), linear-gradient(315deg, rgba(214, 241, 221, 0.55) 25%, transparent 25%);
+  background-position: 0 0, 24px 24px;
+  background-size: 48px 48px;
+}
+
+.recruitment-form,
+.apply-card {
+  width: min(100% - 32px, 560px);
+  max-width: none;
+  margin: 0 auto;
+  padding: 36px 32px 40px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(50, 125, 91, 0.14);
+  border-radius: 24px;
+  box-shadow: 0 22px 60px rgba(55, 118, 83, 0.12);
+}
+
+.recruitment-form {
+  margin-top: 32px;
+}
+
+.recruitment-list-container {
+  width: min(100% - 32px, 560px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 40px 0 48px;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.list-header {
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.list-title,
+.apply-card .form-title {
+  color: #21433b;
+  font-size: clamp(1.6rem, 5vw, 2.15rem);
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.list-header .list-title {
+  text-align: right;
+}
+
+.btn-back {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  color: #287c59;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(50, 125, 91, 0.2);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.btn-back:hover,
+.btn-back:focus-visible {
+  color: #21433b;
+  background: #ffffff;
+  border-color: #4d9d77;
+}
+
+.recruitment-form .step-header {
+  margin-bottom: 28px;
+}
+
+.recruitment-form .form-group,
+.apply-card .form-group {
+  margin-bottom: 18px;
+}
+
+.recruitment-form .form-group label,
+.apply-card .form-group label {
+  margin-bottom: 8px;
+  color: #21433b;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.recruitment-form .form-group input,
+.recruitment-form .form-group select,
+.recruitment-form .form-group textarea,
+.apply-card .form-group input,
+.apply-card .form-group select,
+.apply-card .form-group textarea,
+.detail-display {
+  padding: 12px 14px;
+  color: #21433b;
+  background: #f8fcf9;
+  border: 1px solid #c9e3d0;
+  border-radius: 12px;
+  font-size: 1.5rem;
+}
+
+.recruitment-form .form-group input:focus,
+.recruitment-form .form-group select:focus,
+.recruitment-form .form-group textarea:focus,
+.apply-card .form-group input:focus,
+.apply-card .form-group select:focus,
+.apply-card .form-group textarea:focus {
+  border-color: #4d9d77;
+  box-shadow: 0 0 0 4px rgba(77, 157, 119, 0.14);
+}
+
+.detail-display {
+  line-height: 1.5;
+}
+
+.form-actions {
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.btn,
+.btn-primary,
+.btn-secondary {
+  min-height: 46px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.btn-submit,
+.btn-primary {
+  background: #4d9d77;
+  border-color: #4d9d77;
+  box-shadow: 0 10px 22px rgba(77, 157, 119, 0.2);
+}
+
+.btn-submit:hover,
+.btn-primary:hover {
+  background: #287c59;
+  border-color: #287c59;
+}
+
+.btn-reset,
+.btn-secondary {
+  color: #477161;
+  background: #f5fbf6;
+  border: 1px solid #c9e3d0;
+  box-shadow: none;
+}
+
+.btn-reset:hover,
+.btn-secondary:hover {
+  color: #21433b;
+  background: #e4f4e8;
+}
+
+.recruitment-list {
+  gap: 14px;
+}
+
+.recruitment-card {
+  padding: 22px 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(50, 125, 91, 0.14);
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(55, 118, 83, 0.09);
+}
+
+.recruitment-card:hover {
+  border-color: #8bc7a0;
+  box-shadow: 0 14px 26px rgba(55, 118, 83, 0.16);
+}
+
+/*
+.card-header {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-color: #e1f0e4;
+}
+
+
+.card-title {
+  color: #21433b;
+  font-size: 1.1rem;
+}
+
+.card-row {
+  gap: 12px;
+  margin-bottom: 8px;
+  color: #21433b;
+  font-size: 0.92rem;
+}
+  
+
+.card-footer {
+  color: #287c59;
+  font-size: 0.84rem;
+}
+  */
+
+.empty-message {
+  padding: 40px 20px;
+  color: #6b8c7c;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px dashed #b5ddc2;
+  border-radius: 18px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.completion-container {
+  min-height: 0;
+}
+
+.completion-icon {
+  width: 76px;
+  height: 76px;
+  margin-bottom: 20px;
+  background: #4d9d77;
+  box-shadow: 0 10px 22px rgba(77, 157, 119, 0.2);
+  font-size: 36px;
+}
+
+.completion-title {
+  color: #21433b;
+  font-size: clamp(1.7rem, 5vw, 2.1rem);
+}
+
+.completion-message {
+  color: #6b8c7c;
+  font-size: 1.25rem;
+}
+
+.completion-actions {
+  gap: 10px;
+}
+
+@media screen and (max-width: 600px) {
+  .recruitment-form,
+  .apply-card,
+  .recruitment-list-container {
+    width: min(100% - 24px, 430px);
+  }
+
+  .recruitment-form,
+  .apply-card {
+    padding: 26px 18px 30px;
+  }
+
+  .recruitment-list-container {
+    padding-top: 28px;
+  }
+
+  .list-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .list-header .list-title {
+    text-align: right;
+  }
+
+    .recruitment-card {
+    padding: 18px;
+  }
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-send {
+  background-color: #06C755; /* LINE風グリーン */
+  color: white;
+}
+
+.btn-build {
+    background-color: #007bff;
+    color: white;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+}
