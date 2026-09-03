@@ -258,6 +258,86 @@ html, body {
   border: 1px solid #d9dce0;
 }
 
+.list-filter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(35, 109, 82, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.list-filter-label {
+  white-space: nowrap;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #21433b;
+}
+
+.list-filter-select {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #cfe2d9;
+  border-radius: 10px;
+  background: #fff;
+  color: #21433b;
+  font-size: 1.3rem;
+  font-family: inherit;
+}
+
+.recruitment-card {
+  background: #f5faf7;
+  border: 1px solid rgba(99, 159, 128, 0.2);
+  border-radius: 16px;
+  padding: 18px 16px 10px;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 18px rgba(32, 64, 52, 0.04);
+  cursor: pointer;
+}
+
+.card-body {
+  display: grid;
+  gap: 10px;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.6rem;
+}
+
+.card-label {
+  min-width: 120px;
+  color: #5d746d;
+}
+
+.card-value {
+  flex: 1;
+  font-weight: 600;
+  color: #21433b;
+}
+
+.card-footer {
+  margin-top: 12px;
+  text-align: right;
+  color: #2d9a67;
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.empty-message {
+  padding: 24px 16px;
+  text-align: center;
+  color: #5d746d;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  border: 1px dashed rgba(35, 109, 82, 0.3);
+}
+
 .recruitment-form .form-actions .btn-reset:hover {
   background-color: #eceeef;
 }

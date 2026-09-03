@@ -51,7 +51,7 @@
         <label class="list-title">利用者情報の入力</label>
       </div>
 
-      <div class="page">
+      <div class="form-group">
           <label for="recruitmentCompId">事業所番号<span style="color: #dc3545;">*必須</span></label>
           <input
             type="text"
@@ -96,21 +96,21 @@
       </div>
 
       <div class="form-group">
-          <label for="recruitmentCareLevel">利用者の介護レベル <span style="color: #dc3545;">*必須</span></label>
+          <label for="recruitmentCareLevel">利用者の要介護度 <span style="color: #dc3545;">*必須</span></label>
           <select
             id="recruitmentCareLevel"
             name="recruitmentCareLevel"
             required
           >
             <option value="">選択してください</option>
-            <option value="1">申請中</option>
-            <option value="2">要支援1</option>
-            <option value="3">要支援2</option>
-            <option value="4">要介護1</option>
-            <option value="5">要介護2</option>
-            <option value="6">要介護3</option>
-            <option value="7">要介護4</option>
-            <option value="8">要介護5</option>
+            <option value="0">申請中</option>
+            <option value="1">要支援1</option>
+            <option value="2">要支援2</option>
+            <option value="11">要介護1</option>
+            <option value="12">要介護2</option>
+            <option value="13">要介護3</option>
+            <option value="14">要介護4</option>
+            <option value="15">要介護5</option>
           </select>
       </div>
 
@@ -214,6 +214,13 @@
 
       <h1 class="list-title">新規相談一覧</h1>
 
+      <div class="list-filter-wrapper">
+        <label for="facilityFilter" class="list-filter-label">要介護度で絞り込み</label>
+        <select id="facilityFilter" class="list-filter-select">
+          <option value="all">すべて</option>
+        </select>
+      </div>
+
       <div class="recruitment-list" id="recruitmentListContainer">
         <!-- 募集カードがJavaScriptで動的に挿入される -->
       </div>
@@ -284,10 +291,10 @@
     <div class="recruitment-list-container">
       <div class="apply-card">
         <!-- 募集ID,募集者LINE ID（画面には見せず、応募登録時に送信する）-->
-        <input type="hidden" id="applyRecruitmentId" name="applyRecruitmentId" />
-        <input type="hidden" id="BosyuusyaLineId" name="applyLineId" />
-        <input type="hidden" id="applydetailFreeText" name="applyFreeText" />
-        <input type="hidden" id="applydetailManagerName" name="applydetailManagerName" />
+        <input type="text" id="applyRecruitmentId" name="applyRecruitmentId" />
+        <input type="text" id="BosyuusyaLineId" name="applyLineId" />
+        <input type="text" id="applydetailFreeText" name="applydetailFreeText" />
+        <input type="text" id="applydetailManagerName" name="applydetailManagerName" />
 
         <div class="form-group">
           <label for="applyOfficeNumber">事業所番号 <span style="color: #dc3545;">*</span></label>
@@ -332,6 +339,13 @@
       <div class="list-header">
         <button onclick="go('TOP')" class="btn-back">← TOPへ戻る</button>
         <h1 class="list-title">応募者承認</h1>
+      </div>
+
+      <div class="list-filter-wrapper">
+        <label for="approvalFacilityFilter" class="list-filter-label">施設名で絞り込み</label>
+        <select id="approvalFacilityFilter" class="list-filter-select">
+          <option value="all">すべて</option>
+        </select>
       </div>
 
       <div class="recruitment-list" id="approvalListContainer">
@@ -572,7 +586,6 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            LineId: profile.userId,
             Syoukaibun: recruitmentResultOutput.value,
             REQ_ID: j.REQ_ID
           })
@@ -617,7 +630,7 @@
     }
 
     // 介護レベルを値から変換
-    function formatSERVICE_TYPE(value) {
+    function formatCARE_LEVEL(value) {
       if (value === '0') return '申請中';
       if (value === '1') return '要支援1';
       if (value === '2') return '要支援2';
@@ -637,16 +650,66 @@
       return '-';
     }
 
+    let selectedFacilityFilter = 'all';
+
+    // ----------------------
+    // 募集情報一覧の施設名で絞り込みするためのオプションを生成する処理
+    // ----------------------
+    function buildFacilityFilterOptions() {
+      const filter = document.getElementById('facilityFilter');
+      if (!filter) return;
+
+      const names = [...new Set(
+        (Array.isArray(recruitmentData) ? recruitmentData : [])
+          .map(item => formatCARE_LEVEL(item.CARE_LEVEL))
+          .filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, 'ja'));
+
+      filter.innerHTML = '';
+
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.textContent = 'すべて';
+      filter.appendChild(allOption);
+
+      names.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        filter.appendChild(option);
+      });
+
+      if (names.includes(selectedFacilityFilter)) {
+        filter.value = selectedFacilityFilter;
+      } else {
+        selectedFacilityFilter = 'all';
+        filter.value = 'all';
+      }
+
+      filter.onchange = () => {
+        selectedFacilityFilter = filter.value;
+        renderRecruitmentList();
+      };
+    }
+
     function renderRecruitmentList() {
       const container = document.getElementById('recruitmentListContainer');
       container.innerHTML = '';
+      buildFacilityFilterOptions();
 
-      if (!Array.isArray(recruitmentData) || recruitmentData.length === 0) {
-        container.innerHTML = '<div class="empty-message">募集情報がありません</div>';
+      const filteredData = Array.isArray(recruitmentData)
+        ? recruitmentData.filter(item => {
+            if (selectedFacilityFilter === 'all') return true;
+            return (formatCARE_LEVEL(item.CARE_LEVEL) || '') === selectedFacilityFilter;
+          })
+        : [];
+
+      if (filteredData.length === 0) {
+        container.innerHTML = '<div class="empty-message">該当する募集情報がありません</div>';
         return;
       }
 
-      recruitmentData.forEach(item => {
+      filteredData.forEach(item => {
         const card = document.createElement('div');
         card.className = 'recruitment-card';
 
@@ -654,8 +717,12 @@
         card.innerHTML = `
           <div class="card-body">
             <div class="card-row">
+              <span class="card-label">施設名:</span>
+              <span class="card-value">${item.COMP_NAME || '-'}</span>
+            </div>
+            <div class="card-row">
               <span class="card-label">介護レベル:</span>
-              <span class="card-value">${formatSERVICE_TYPE(item.SERVICE_TYPE_ID)}</span>
+              <span class="card-value">${formatCARE_LEVEL(item.CARE_LEVEL)}</span>
             </div>
             <div class="card-row">
               <span class="card-label">年齢:</span>
@@ -688,7 +755,7 @@
       document.getElementById('detailTantousyaName').textContent = item.NAME;
       document.getElementById('detailCompId').textContent = item.COMP_ID;
       document.getElementById('detailInitialName').textContent = item.USER_NAME;
-      document.getElementById('detailCareLevel').textContent = formatSERVICE_TYPE(item.SERVICE_TYPE_ID);
+      document.getElementById('detailCareLevel').textContent = formatCARE_LEVEL(item.CARE_LEVEL);
       document.getElementById('detailAge').textContent = item.AGE;
       document.getElementById('detailGender').textContent = formatGender(item.SEX);
       document.getElementById('detailStartDate').textContent = formatPlannedDate(item.START);
@@ -793,6 +860,44 @@
     }
 
     let selectedApprovalItem = null;
+    let selectedApprovalFacilityFilter = 'all';
+
+    function buildApprovalFacilityFilterOptions() {
+      const filter = document.getElementById('approvalFacilityFilter');
+      if (!filter) return;
+
+      const names = [...new Set(
+        (Array.isArray(applyData) ? applyData : [])
+          .map(item => item && item.SISETU_COMP_NAME)
+          .filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, 'ja'));
+
+      filter.innerHTML = '';
+
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.textContent = 'すべて';
+      filter.appendChild(allOption);
+
+      names.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        filter.appendChild(option);
+      });
+
+      if (names.includes(selectedApprovalFacilityFilter)) {
+        filter.value = selectedApprovalFacilityFilter;
+      } else {
+        selectedApprovalFacilityFilter = 'all';
+        filter.value = 'all';
+      }
+
+      filter.onchange = () => {
+        selectedApprovalFacilityFilter = filter.value;
+        renderApplyList();
+      };
+    }
 
     // ----------------------
     // 応募一覧を画面に描画する処理
@@ -800,20 +905,28 @@
     async function renderApplyList() {
       const container = document.getElementById('approvalListContainer');
       container.innerHTML = '';
+      buildApprovalFacilityFilterOptions();
 
-      if (!Array.isArray(applyData) || applyData.length === 0) {
-        container.innerHTML = '<div class="empty-message">応募情報がありません</div>';
+      const filteredData = Array.isArray(applyData)
+        ? applyData.filter(item => {
+            if (selectedApprovalFacilityFilter === 'all') return true;
+            return (item.SISETU_COMP_NAME || '') === selectedApprovalFacilityFilter;
+          })
+        : [];
+
+      if (filteredData.length === 0) {
+        container.innerHTML = '<div class="empty-message">該当する応募情報がありません</div>';
         return;
       }
 
-      applyData.forEach(item => {
+      filteredData.forEach(item => {
         const card = document.createElement('div');
         card.className = 'recruitment-card';
         card.onclick = () => openApprovalDetail(item);
 
         card.innerHTML = `
           <div class="card-header">
-            <h3 class="card-title">${item.COMP_NAME || '-'}</h3>
+            <h3 class="card-title">${item.SISETU_COMP_NAME || '-'}</h3>
           </div>
             <div class="card-row">
               <span class="card-label">担当者名</span>
@@ -821,7 +934,7 @@
             </div>
             <div class="card-row">
               <span class="card-label">住所</span>
-              <span class="card-value">${item.ADDRESS1 + item.ADDRESS2 + item.ADDRESS3 || '-'}</span>
+              <span class="card-value">${(item.ADDRESS1 || '') + (item.ADDRESS2 || '') + (item.ADDRESS3 || '') || '-'}</span>
             </div>
           </div>
           <div class="card-footer">詳細を表示 →</div>
@@ -929,7 +1042,7 @@
         const facilityName = document.getElementById('recruitmentCompName').value.trim();
         const maxLength = 150;
         // const service = document.getElementById('service').value;
-        const careLevel = formatSERVICE_TYPE(document.getElementById('recruitmentCareLevel').value);
+        const careLevel = formatCARE_LEVEL(document.getElementById('recruitmentCareLevel').value);
         const age = document.getElementById('recruitmentAge').value.trim();
         const gender = formatGender(document.getElementById('recruitmentGender').value);
         // const wheelchair = document.getElementById('wheelchair').value;
