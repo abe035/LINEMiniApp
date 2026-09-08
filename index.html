@@ -15,7 +15,7 @@
       <div class="home-page__intro">
         <span class="home-page__eyebrow">CARE MATCHING</span>
         <h1 class="home__title">介護施設マッチング</h1>
-        <p class="home-page__lead">介護施設と利用者をつなぐ</p>
+        <p class="home-page__lead">介護施設と利用者様をつなぐ</p>
       </div>
 
       <div class="home__buttons">
@@ -32,7 +32,7 @@
 
         <button onclick="go('Approval')" class="home__buttons__button home-card home-card--approval">
           <span class="home-card__icon" aria-hidden="true">✓</span>
-          <span class="home-card__label">応募者一覧</span>
+          <span class="home-card__label">受入れ応募一覧</span>
           <span class="home-card__description">応募者を確認</span>
         </button>
       </div>
@@ -48,7 +48,7 @@
       <input type="hidden" id="recruitmentID" name="recruitmentID" />
 
       <div class="step-header">
-        <label class="list-title">利用者情報の入力</label>
+        <label class="list-title">利用者様情報の入力</label>
       </div>
 
       <div class="form-group">
@@ -85,7 +85,7 @@
       </div>
 
       <div class="form-group">
-          <label for="recruitmentName">利用者名(イニシャル) <span style="color: #dc3545;">*必須</span></label>
+          <label for="recruitmentName">利用者様(イニシャル) <span style="color: #dc3545;">*必須</span></label>
           <input
             type="text"
             id="recruitmentName"
@@ -96,7 +96,7 @@
       </div>
 
       <div class="form-group">
-          <label for="recruitmentCareLevel">利用者の要介護度 <span style="color: #dc3545;">*必須</span></label>
+          <label for="recruitmentCareLevel">利用者様の要介護度 <span style="color: #dc3545;">*必須</span></label>
           <select
             id="recruitmentCareLevel"
             name="recruitmentCareLevel"
@@ -146,7 +146,6 @@
           id="recruitmentStartDateTime"
           name="recruitmentStartDateTime"
           placeholder="例：20xx/01/01"
-          required
         />
       </div>
 
@@ -160,19 +159,23 @@
       </div>
 
       <!-- プロンプト作成ボタン -->
-      <button class="btn-build" onclick="generatePrompt()">プロンプト作成</button>
+      <!--<button class="btn-build" onclick="generatePrompt()">プロンプト作成</button>-->
 
       <!-- プロンプト表示・編集用エリア -->
+       <!--
       <div class="form-group">
         <label for="generatedPrompt">作成されたプロンプト（編集可）</label>
-        <textarea id="generatedPrompt" placeholder="プロンプト作成ボタンを押すとここに生成されます"></textarea>
-      </div>
+        -->
+        <input type="hidden" id="generatedPrompt" placeholder="プロンプト作成ボタンを押すとここに生成されます">
+      <!--</div>-->
 
       <!-- 紹介文生成ボタン -->
+       <!--
       <button id="sendBtn" class="btn-send" onclick="askGemini()">紹介文生成</button>
-      <!-- プロンプト生成 + 紹介文生成ボタン
-      <button id="sendBtn" class="btn-send" onclick="generatePrompt()">紹介文生成</button>
       -->
+      <!-- プロンプト生成 + 紹介文生成ボタン-->
+      <button id="sendBtn" type="button" class="btn-send" onclick="generatePrompt()" disabled>紹介文生成</button>
+      
 
       <!-- 結果表示エリア -->
       <div class="form-group">
@@ -214,16 +217,49 @@
 
       <h1 class="list-title">新規相談一覧</h1>
 
-      <div class="list-filter-wrapper">
-        <label for="facilityFilter" class="list-filter-label">要介護度で絞り込み</label>
-        <select id="facilityFilter" class="list-filter-select">
-          <option value="all">すべて</option>
-        </select>
+      <div class="list-controls">
+        <button type="button" class="list-filter-trigger" onclick="openRecruitmentFilter()" aria-haspopup="dialog" aria-controls="recruitmentFilterModal">
+          <span>絞り込み・並べ替え</span>
+          <span class="list-filter-trigger__chevron" aria-hidden="true">›</span>
+        </button>
       </div>
 
       <div class="recruitment-list" id="recruitmentListContainer">
         <!-- 募集カードがJavaScriptで動的に挿入される -->
       </div>
+    </div>
+
+    <div id="recruitmentFilterModal" class="filter-modal" role="dialog" aria-modal="true" aria-labelledby="recruitmentFilterTitle" aria-hidden="true">
+      <div class="filter-modal__backdrop" onclick="closeRecruitmentFilter()"></div>
+      <section class="filter-modal__sheet">
+        <div class="filter-modal__header">
+          <h2 id="recruitmentFilterTitle">絞り込み</h2>
+          <button type="button" class="filter-modal__close" onclick="closeRecruitmentFilter()" aria-label="閉じる">×</button>
+        </div>
+
+        <div class="filter-modal__content">
+          <div class="filter-modal__group">
+            <label for="facilityFilter" class="filter-modal__label">要介護度</label>
+            <select id="facilityFilter" class="list-filter-select">
+              <option value="all">すべて</option>
+            </select>
+          </div>
+
+          <div class="filter-modal__group">
+            <label for="recruitmentSort" class="filter-modal__label">並べ替え</label>
+            <select id="recruitmentSort" class="list-filter-select">
+              <option value="recruitment">募集順</option>
+              <option value="careLevel">介護レベル順</option>
+              <option value="startDate">利用開始予定日順</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-modal__actions">
+          <button type="button" class="filter-modal__clear" onclick="clearRecruitmentFilter()">絞り込みを解除</button>
+          <button type="button" class="filter-modal__apply" onclick="applyRecruitmentFilter()">結果を表示</button>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -291,10 +327,10 @@
     <div class="recruitment-list-container">
       <div class="apply-card">
         <!-- 募集ID,募集者LINE ID（画面には見せず、応募登録時に送信する）-->
-        <input type="text" id="applyRecruitmentId" name="applyRecruitmentId" />
-        <input type="text" id="BosyuusyaLineId" name="applyLineId" />
-        <input type="text" id="applydetailFreeText" name="applydetailFreeText" />
-        <input type="text" id="applydetailManagerName" name="applydetailManagerName" />
+        <input type="hidden" id="applyRecruitmentId" name="applyRecruitmentId" />
+        <input type="hidden" id="BosyuusyaLineId" name="applyLineId" />
+        <input type="hidden" id="applydetailFreeText" name="applydetailFreeText" />
+        <input type="hidden" id="applydetailManagerName" name="applydetailManagerName" />
 
         <div class="form-group">
           <label for="applyOfficeNumber">事業所番号 <span style="color: #dc3545;">*</span></label>
@@ -338,19 +374,50 @@
     <div class="recruitment-list-container">
       <div class="list-header">
         <button onclick="go('TOP')" class="btn-back">← TOPへ戻る</button>
-        <h1 class="list-title">応募者承認</h1>
       </div>
 
-      <div class="list-filter-wrapper">
-        <label for="approvalFacilityFilter" class="list-filter-label">施設名で絞り込み</label>
-        <select id="approvalFacilityFilter" class="list-filter-select">
-          <option value="all">すべて</option>
-        </select>
+      <h1 class="list-title">受入れ応募一覧</h1>
+
+      <div class="list-controls">
+        <button type="button" class="list-filter-trigger" onclick="openApprovalFilter()" aria-haspopup="dialog" aria-controls="approvalFilterModal">
+          <span>絞り込み・並べ替え</span>
+          <span class="list-filter-trigger__chevron" aria-hidden="true">›</span>
+        </button>
       </div>
 
       <div class="recruitment-list" id="approvalListContainer">
         <!-- 応募者カードがJavaScriptで動的に挿入される -->
       </div>
+    </div>
+
+    <div id="approvalFilterModal" class="filter-modal" role="dialog" aria-modal="true" aria-labelledby="approvalFilterTitle" aria-hidden="true">
+      <div class="filter-modal__backdrop" onclick="closeApprovalFilter()"></div>
+      <section class="filter-modal__sheet">
+        <div class="filter-modal__header">
+          <h2 id="approvalFilterTitle">絞り込み</h2>
+          <button type="button" class="filter-modal__close" onclick="closeApprovalFilter()" aria-label="閉じる">×</button>
+        </div>
+
+        <div class="filter-modal__content">
+          <div class="filter-modal__group">
+            <label for="approvalFacilityFilter" class="filter-modal__label">利用者様</label>
+            <select id="approvalFacilityFilter" class="list-filter-select">
+            </select>
+          </div>
+
+          <div class="filter-modal__group">
+            <label for="approvalSort" class="filter-modal__label">並べ替え</label>
+            <select id="approvalSort" class="list-filter-select">
+              <option value="application">応募順</option>
+              <option value="facility">施設名順</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-modal__actions">
+          <button type="button" class="filter-modal__apply" onclick="applyApprovalFilter()">結果を表示</button>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -362,8 +429,8 @@
       </div>
 
       <!-- 募集ID,募集者LINE ID（画面には見せず、応募登録時に送信する）-->
-      <input type="hidden" id="ApprovalRecruitmentId" name="ApprovalRecruitmentId" />
-      <input type="hidden" id="ApprovalLineId" name="ApprovalLineId" />
+      <input type="hidden" id="ApprovalDetailRecruitmentId" name="ApprovalDetailRecruitmentId" />
+      <input type="hidden" id="ApprovalDetailLineId" name="ApprovalDetailLineId" />
       <input type="hidden" id="ApprovalID" name="ApprovalID" />
 
       <div class="page">
@@ -463,6 +530,7 @@
     // ----------------------
     window.addEventListener('load', async () => {
       const params = new URLSearchParams(window.location.search);
+      // URLクエリに"recruitmentID"または"ApprovalID"があれば、該当する詳細ページを表示
       if (params.get('recruitmentID')) {
         await setRecruitmentDetail();
       }else if (params.get('ApprovalID')) {
@@ -527,6 +595,7 @@
           document.getElementById("recruitmentCompId").value = userData.EM_COMP_ID || "";
           document.getElementById("recruitmentCompName").value = userData.COMP_NAME || "";
           document.getElementById("recruitmentManagerName").value =userData.NAME || "";
+          updateRecruitmentPromptButtonState();
           //応募ページの担当者名を自動入力
           document.getElementById("applydetailManagerName").value =userData.NAME || "";
         } else {
@@ -539,9 +608,71 @@
     }
 
     // ----------------------
+    // 募集情報の入力チェック処理
+    // ----------------------
+    function validateRecruitmentForm() {
+      const requiredFields = [
+        { id: "recruitmentCompId", label: "事業所番号" },
+        { id: "recruitmentCompName", label: "事業所名" },
+        { id: "recruitmentManagerName", label: "担当者名" },
+        { id: "recruitmentName", label: "利用者様(イニシャル)" },
+        { id: "recruitmentCareLevel", label: "利用者様の要介護度" },
+        { id: "recruitmentGender", label: "性別" },
+        { id: "recruitmentAge", label: "年齢" }
+      ];
+
+      const missingField = requiredFields.find(({ id }) => {
+        const field = document.getElementById(id);
+        return !field || !field.value.trim();
+      });
+
+      if (!missingField) return true;
+
+      const field = document.getElementById(missingField.id);
+      alert(`${missingField.label}を入力してください。`);
+      field.focus();
+      return false;
+    }
+
+    function updateRecruitmentPromptButtonState() {
+      const requiredFieldIds = [
+        "recruitmentCompId",
+        "recruitmentCompName",
+        "recruitmentManagerName",
+        "recruitmentName",
+        "recruitmentCareLevel",
+        "recruitmentGender",
+        "recruitmentAge"
+      ];
+      const sendButton = document.getElementById("sendBtn");
+      const allFieldsFilled = requiredFieldIds.every((id) => {
+        const field = document.getElementById(id);
+        return field && field.value.trim();
+      });
+
+      sendButton.disabled = !allFieldsFilled;
+    }
+
+    [
+      "recruitmentCompId",
+      "recruitmentCompName",
+      "recruitmentManagerName",
+      "recruitmentName",
+      "recruitmentCareLevel",
+      "recruitmentGender",
+      "recruitmentAge"
+    ].forEach((id) => {
+      document.getElementById(id).addEventListener("input", updateRecruitmentPromptButtonState);
+      document.getElementById(id).addEventListener("change", updateRecruitmentPromptButtonState);
+    });
+    updateRecruitmentPromptButtonState();
+
+    // ----------------------
     // 募集情報をDBに保存する処理
     // ----------------------
     async function regiRecruitment() {
+      if (!validateRecruitmentForm()) return;
+
       await getDB_tk();
       const profile = await liff.getProfile();
 
@@ -651,6 +782,43 @@
     }
 
     let selectedFacilityFilter = 'all';
+    let selectedRecruitmentSort = 'recruitment';
+
+    function openRecruitmentFilter() {
+      const modal = document.getElementById('recruitmentFilterModal');
+      if (!modal) return;
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('filter-modal-open');
+    }
+
+    function closeRecruitmentFilter() {
+      const modal = document.getElementById('recruitmentFilterModal');
+      if (!modal) return;
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('filter-modal-open');
+    }
+
+    function clearRecruitmentFilter() {
+      selectedFacilityFilter = 'all';
+      selectedRecruitmentSort = 'recruitment';
+      renderRecruitmentList();
+    }
+
+    function applyRecruitmentFilter() {
+      const filter = document.getElementById('facilityFilter');
+      const sort = document.getElementById('recruitmentSort');
+      selectedFacilityFilter = filter ? filter.value : 'all';
+      selectedRecruitmentSort = sort ? sort.value : 'recruitment';
+      renderRecruitmentList();
+      closeRecruitmentFilter();
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        closeRecruitmentFilter();
+        closeApprovalFilter();
+      }
+    });
 
     // ----------------------
     // 募集情報一覧の施設名で絞り込みするためのオプションを生成する処理
@@ -663,7 +831,23 @@
         (Array.isArray(recruitmentData) ? recruitmentData : [])
           .map(item => formatCARE_LEVEL(item.CARE_LEVEL))
           .filter(Boolean)
-      )].sort((a, b) => a.localeCompare(b, 'ja'));
+      )];
+      const careLevelOrder = [
+        '申請中',
+        '要支援1',
+        '要支援2',
+        '要介護1',
+        '要介護2',
+        '要介護3',
+        '要介護4',
+        '要介護5'
+      ];
+      names.sort((a, b) => {
+        const orderA = careLevelOrder.indexOf(a);
+        const orderB = careLevelOrder.indexOf(b);
+        return (orderA === -1 ? careLevelOrder.length : orderA)
+          - (orderB === -1 ? careLevelOrder.length : orderB);
+      });
 
       filter.innerHTML = '';
 
@@ -692,10 +876,44 @@
       };
     }
 
+    function buildRecruitmentSortOptions() {
+      const sort = document.getElementById('recruitmentSort');
+      if (!sort) return;
+
+      sort.value = selectedRecruitmentSort;
+      sort.onchange = () => {
+        selectedRecruitmentSort = sort.value;
+        renderRecruitmentList();
+      };
+    }
+
+    function sortRecruitmentData(data) {
+      if (selectedRecruitmentSort === 'recruitment') return data;
+
+      return data.sort((a, b) => {
+        if (selectedRecruitmentSort === 'careLevel') {
+          const careLevelA = Number(a.CARE_LEVEL);
+          const careLevelB = Number(b.CARE_LEVEL);
+          const hasCareLevelA = Number.isFinite(careLevelA);
+          const hasCareLevelB = Number.isFinite(careLevelB);
+          if (!hasCareLevelA || !hasCareLevelB) return hasCareLevelA ? -1 : 1;
+          return careLevelA - careLevelB;
+        }
+
+        const startDateA = new Date(a.START).getTime();
+        const startDateB = new Date(b.START).getTime();
+        const hasStartDateA = Number.isFinite(startDateA);
+        const hasStartDateB = Number.isFinite(startDateB);
+        if (!hasStartDateA || !hasStartDateB) return hasStartDateA ? -1 : 1;
+        return startDateA - startDateB;
+      });
+    }
+
     function renderRecruitmentList() {
       const container = document.getElementById('recruitmentListContainer');
       container.innerHTML = '';
       buildFacilityFilterOptions();
+      buildRecruitmentSortOptions();
 
       const filteredData = Array.isArray(recruitmentData)
         ? recruitmentData.filter(item => {
@@ -703,6 +921,7 @@
             return (formatCARE_LEVEL(item.CARE_LEVEL) || '') === selectedFacilityFilter;
           })
         : [];
+      sortRecruitmentData(filteredData);
 
       if (filteredData.length === 0) {
         container.innerHTML = '<div class="empty-message">該当する募集情報がありません</div>';
@@ -836,13 +1055,13 @@
     async function loadApplyData() {
       try {
         await getDB_tk();
-        const profile = await liff.getProfile();
+        // const profile = await liff.getProfile();
 
         const form = new FormData();
         form.append("action", "OuboIchiranHyouzi");
         form.append("db_token", API_TOKEN);
         form.append("db_ApiKey", DB_API_KEY);
-        form.append("LineID", profile.userId);
+        form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
 
         const response = await fetch(DEMO_API, { method: "POST", body: form });
         const data = await response.json();
@@ -860,59 +1079,89 @@
     }
 
     let selectedApprovalItem = null;
-    let selectedApprovalFacilityFilter = 'all';
+    let selectedApprovalRecruitmentFilter = '';
+    let selectedApprovalSort = 'application';
+
+    function openApprovalFilter() {
+      const modal = document.getElementById('approvalFilterModal');
+      if (!modal) return;
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('filter-modal-open');
+    }
+
+    function closeApprovalFilter() {
+      const modal = document.getElementById('approvalFilterModal');
+      if (!modal) return;
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('filter-modal-open');
+    }
+
+    function applyApprovalFilter() {
+      const filter = document.getElementById('approvalFacilityFilter');
+      const sort = document.getElementById('approvalSort');
+      selectedApprovalRecruitmentFilter = filter ? filter.value : '';
+      selectedApprovalSort = sort ? sort.value : 'application';
+      renderApplyList();
+      closeApprovalFilter();
+    }
 
     function buildApprovalFacilityFilterOptions() {
       const filter = document.getElementById('approvalFacilityFilter');
       if (!filter) return;
 
-      const names = [...new Set(
+      const recruitmentItems = [...new Map(
         (Array.isArray(applyData) ? applyData : [])
-          .map(item => item && item.SISETU_COMP_NAME)
-          .filter(Boolean)
-      )].sort((a, b) => a.localeCompare(b, 'ja'));
+          .filter(item => item && item.REQ_REQ_ID)
+          .map(item => [String(item.REQ_REQ_ID), item])
+      ).values()].sort((a, b) => String(a.REQ_REQ_ID).localeCompare(String(b.REQ_REQ_ID), 'ja'));
+      const recruitmentIds = recruitmentItems.map(item => String(item.REQ_REQ_ID));
 
       filter.innerHTML = '';
 
-      const allOption = document.createElement('option');
-      allOption.value = 'all';
-      allOption.textContent = 'すべて';
-      filter.appendChild(allOption);
-
-      names.forEach(name => {
+      recruitmentItems.forEach(item => {
         const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
+        option.value = item.REQ_REQ_ID;
+        option.textContent = `${item.USER_NAME}様（${item.AGE}歳）`;
         filter.appendChild(option);
       });
 
-      if (names.includes(selectedApprovalFacilityFilter)) {
-        filter.value = selectedApprovalFacilityFilter;
+      if (recruitmentIds.includes(selectedApprovalRecruitmentFilter)) {
+        filter.value = selectedApprovalRecruitmentFilter;
       } else {
-        selectedApprovalFacilityFilter = 'all';
-        filter.value = 'all';
+        selectedApprovalRecruitmentFilter = recruitmentIds[0] || '';
+        filter.value = selectedApprovalRecruitmentFilter;
       }
 
       filter.onchange = () => {
-        selectedApprovalFacilityFilter = filter.value;
-        renderApplyList();
+        selectedApprovalRecruitmentFilter = filter.value;
       };
     }
 
+    function buildApprovalSortOptions() {
+      const sort = document.getElementById('approvalSort');
+      if (!sort) return;
+
+      sort.value = selectedApprovalSort;
+    }
+
     // ----------------------
-    // 応募一覧を画面に描画する処理
+    // 応募一覧を画面に描画する処理(モーダル)
     // ----------------------
     async function renderApplyList() {
       const container = document.getElementById('approvalListContainer');
       container.innerHTML = '';
       buildApprovalFacilityFilterOptions();
+      buildApprovalSortOptions();
 
       const filteredData = Array.isArray(applyData)
         ? applyData.filter(item => {
-            if (selectedApprovalFacilityFilter === 'all') return true;
-            return (item.SISETU_COMP_NAME || '') === selectedApprovalFacilityFilter;
+            return String(item.REQ_REQ_ID || '') === String(selectedApprovalRecruitmentFilter);
           })
         : [];
+
+      if (selectedApprovalSort === 'facility') {
+        filteredData.sort((a, b) => (a.SISETU_COMP_NAME || '').localeCompare(b.SISETU_COMP_NAME || '', 'ja'));
+      }
 
       if (filteredData.length === 0) {
         container.innerHTML = '<div class="empty-message">該当する応募情報がありません</div>';
@@ -925,7 +1174,8 @@
         card.onclick = () => openApprovalDetail(item);
 
         card.innerHTML = `
-          <div class="card-header">
+          <input type="hidden" id="ApprovalRecruitmentId" name="ApprovalRecruitmentId" value="${item.REQ_REQ_ID}" />
+          <div class="card-header"> 
             <h3 class="card-title">${item.SISETU_COMP_NAME || '-'}</h3>
           </div>
             <div class="card-row">
@@ -951,8 +1201,8 @@
     function openApprovalDetail(item) {
       selectedApprovalItem = item;
       // 承認時に使用
-      document.getElementById('ApprovalRecruitmentId').value = item.REQ_ID;
-      document.getElementById('ApprovalLineId').value = item.OUBOSYA_LINE_ID;
+      document.getElementById('ApprovalDetailRecruitmentId').value = item.REQ_ID;
+      document.getElementById('ApprovalDetailLineId').value = item.OUBOSYA_LINE_ID;
 
       document.getElementById('approvalDetailFacilityId').textContent = item.SISETU_COMP_ID;
       document.getElementById('approvalDetailFacilityName').textContent = item.SISETU_COMP_NAME;
@@ -994,13 +1244,13 @@
 
       const form = new FormData();
       const profile = await liff.getProfile();
-      const ApprovalRecruitmentId = document.getElementById("ApprovalRecruitmentId");
-      const ApprovalLineId = document.getElementById("ApprovalLineId");
+      const ApprovalDetailRecruitmentId = document.getElementById("ApprovalDetailRecruitmentId");
+      const ApprovalDetailLineId = document.getElementById("ApprovalDetailLineId");
 
       form.append("action", "changeFlag");
       form.append("db_token", API_TOKEN);
       form.append("db_ApiKey", DB_API_KEY);
-      form.append("recruitmentID", ApprovalRecruitmentId.value);
+      form.append("recruitmentID", ApprovalDetailRecruitmentId.value);
       form.append("LineID", profile.userId);
 
       const response = await fetch(DEMO_API, { method: "POST", body: form });
@@ -1016,7 +1266,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            OubosyaLineId: ApprovalLineId.value,
+            OubosyaLineId: ApprovalDetailLineId.value,
             CompName: selectedApprovalItem.SISETU_COMP_NAME,
             TantousyaName: selectedApprovalItem.RES_NAME,
             CompPhoneNumber: selectedApprovalItem.PHONE,
@@ -1076,7 +1326,7 @@
         document.getElementById('generatedPrompt').value = promptText.trim();
 
         // AI呼び出し 後々コメントアウトを外す
-        // askGemini();
+        askGemini();
     }
 
     //----------------------
@@ -1128,7 +1378,7 @@
         } finally {
             // UIを元に戻す
             promptInput.disabled = false;
-            sendBtn.disabled = false;
+          updateRecruitmentPromptButtonState();
         }
     }
   </script>
