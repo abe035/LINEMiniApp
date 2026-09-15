@@ -1356,6 +1356,13 @@ button {
   color: white;
 }
 
+.validation-message {
+  margin: 12px 0 0;
+  color: #dc3545;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
 .btn-send:disabled {
   background-color: #c7cdd1;
   color: #f5f6f7;

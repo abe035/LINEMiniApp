@@ -183,6 +183,8 @@
         <textarea id="resultOutput" placeholder="ここに生成された紹介文が表示されます"></textarea>
       </div>
 
+      <p id="recruitmentValidationMessage" class="validation-message" role="alert" aria-live="polite" hidden></p>
+
       <div class="form-actions">
         <button class="btn btn-submit" onclick="regiRecruitment()">募集をかける</button>
         <button type="button" class="btn btn-reset" onclick="go('TOP')">戻る</button>
@@ -270,6 +272,8 @@
         <label class="list-title">詳細情報</label>
       </div>
 
+      <input type="hidden" id="detailRecruitmentId" name="detailRecruitmentId" />
+
       <div class="page">
         <label>事業者番号</label>
         <div class="detail-display" id="detailCompId">-</div>
@@ -316,10 +320,29 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn btn-submit" onclick="go('Apply')">応募する</button>
+        <button id="detailActionButton" type="button" class="btn btn-submit" onclick="go('Apply')">応募する</button>
         <button type="button" class="btn btn-reset" onclick="go('RecruitmentList')">戻る</button>
       </div>
     </div>
+  </div>
+
+  <div id="cancelConfirmModal" class="filter-modal" role="dialog" aria-modal="true" aria-labelledby="cancelConfirmTitle" aria-hidden="true">
+    <div class="filter-modal__backdrop" onclick="closeCancelConfirmModal()"></div>
+    <section class="filter-modal__sheet">
+      <div class="filter-modal__header">
+        <h2 id="cancelConfirmTitle">確認</h2>
+        <button type="button" class="filter-modal__close" onclick="closeCancelConfirmModal()" aria-label="閉じる">×</button>
+      </div>
+
+      <div class="filter-modal__content">
+        <p style="margin: 0; font-size: 1rem; line-height: 1.7;">本当にキャンセルしても大丈夫ですか？</p>
+      </div>
+
+      <div class="filter-modal__actions">
+        <button type="button" class="filter-modal__apply" onclick="cancelRecruitment()">キャンセルする</button>
+        <button type="button" class="filter-modal__clear" onclick="closeCancelConfirmModal()">戻る</button>
+      </div>
+    </section>
   </div>
 
   <!-- 応募ページ -->
@@ -572,9 +595,11 @@
     // ユーザー情報の取得
     // ----------------------
     let UserData = [];
+    window.currentLineUserId = "";
 
     async function getUserData() {
       const profile = await liff.getProfile();
+      window.currentLineUserId = profile.userId;
 
       try {
         await getDB_tk();
@@ -584,6 +609,7 @@
         form.append("db_token", API_TOKEN);
         form.append("db_ApiKey", DB_API_KEY);
         form.append("LineID", profile.userId);
+        // form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
 
         const response = await fetch(DEMO_API, { method: "POST", body: form });
         const data = await response.json();
@@ -626,10 +652,16 @@
         return !field || !field.value.trim();
       });
 
-      if (!missingField) return true;
+      const validationMessage = document.getElementById("recruitmentValidationMessage");
+      if (!missingField) {
+        validationMessage.textContent = "";
+        validationMessage.hidden = true;
+        return true;
+      }
 
       const field = document.getElementById(missingField.id);
-      alert(`${missingField.label}を入力してください。`);
+      validationMessage.textContent = `${missingField.label}を入力してください。`;
+      validationMessage.hidden = false;
       field.focus();
       return false;
     }
@@ -651,6 +683,11 @@
       });
 
       sendButton.disabled = !allFieldsFilled;
+      if (allFieldsFilled) {
+        const validationMessage = document.getElementById("recruitmentValidationMessage");
+        validationMessage.textContent = "";
+        validationMessage.hidden = true;
+      }
     }
 
     [
@@ -725,7 +762,9 @@
       }
     }
 
+    // ----------------------
     // 募集情報をDBから取得して画面用データとして保持する処理
+    // ----------------------
     async function loadRecruitmentData() {
       try {
         await getDB_tk();
@@ -738,7 +777,7 @@
         const response = await fetch(DEMO_API, { method: "POST", body: form });
         const data = await response.json();
 
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           recruitmentData = data;
         } else {
           console.error("募集情報の取得に失敗しました。", data);
@@ -962,10 +1001,68 @@
       });
     }
 
+    // 募集詳細ページのキャンセル確認モーダルの表示・非表示
+    function openCancelConfirmModal() {
+      const modal = document.getElementById('cancelConfirmModal');
+      if (!modal) return;
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('filter-modal-open');
+    }
+
+    // 募集詳細ページのキャンセル確認モーダルを閉じる処理
+    function closeCancelConfirmModal() {
+      const modal = document.getElementById('cancelConfirmModal');
+      if (!modal) return;
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('filter-modal-open');
+    }
+
+    // 募集詳細ページのボタンを「キャンセル済み」に変更する処理
+    function confirmRecruitmentCancel() {
+      const actionButton = document.getElementById('detailActionButton');
+      if (actionButton) {
+        actionButton.textContent = 'キャンセル済み';
+        actionButton.disabled = true;
+        actionButton.classList.remove('btn-reset');
+        actionButton.classList.add('btn-submit');
+      }
+      closeCancelConfirmModal();
+    }
+
+    // ----------------------
+    // 募集詳細ページのボタンの表示内容を更新する処理
+    // ----------------------
+    function updateRecruitmentDetailActionButton(item) {
+      const actionButton = document.getElementById('detailActionButton');
+      if (!actionButton) return;
+
+      // 表示している募集情報の作成者と現在のユーザーが同じかどうかを判定
+      const currentUserLineId = String(window.currentLineUserId || '').trim();
+      const recruitmentCreatorLineId = String(item.CREATE_BY || '').trim();
+      const isOwnRecruitment = currentUserLineId && currentUserLineId === recruitmentCreatorLineId;
+
+      if (isOwnRecruitment) {
+        actionButton.textContent = '募集をキャンセル';
+        actionButton.disabled = false;
+        actionButton.classList.remove('btn-submit');
+        actionButton.classList.add('btn-reset');
+        actionButton.onclick = () => openCancelConfirmModal();
+        actionButton.setAttribute('aria-label', '募集をキャンセル');
+      } else {
+        actionButton.textContent = '応募する';
+        actionButton.disabled = false;
+        actionButton.classList.remove('btn-reset');
+        actionButton.classList.add('btn-submit');
+        actionButton.onclick = () => go('Apply');
+        actionButton.setAttribute('aria-label', '応募する');
+      }
+    }
+
     // 募集情報の詳細表示ページで表示する内容
     // item.xxはDBのカラム名に対応
     function openRecruitmentDetail(item) {
       // 募集ID, 募集者LINE IDを応募ページに渡すためにhidden inputに設定
+      document.getElementById('detailRecruitmentId').value = item.REQ_ID;
       document.getElementById('applyRecruitmentId').value = item.REQ_ID;
       document.getElementById('BosyuusyaLineId').value = item.CREATE_BY;
       document.getElementById('applydetailFreeText').value = item.COMMENT || '-';
@@ -979,6 +1076,7 @@
       document.getElementById('detailGender').textContent = formatGender(item.SEX);
       document.getElementById('detailStartDate').textContent = formatPlannedDate(item.START);
       document.getElementById('detailFreeText').textContent = item.COMMENT || '-';
+      updateRecruitmentDetailActionButton(item);
 
       go('RecruitmentDetail');
     }
@@ -1005,6 +1103,33 @@
         openRecruitmentDetail(data[0]);
       }
     }
+
+    // ----------------------
+    // 募集情報のキャンセル処理
+    // ----------------------
+    async function cancelRecruitment() {
+      await getDB_tk();
+
+      const recruitmentID = document.getElementById("detailRecruitmentId");
+      const form = new FormData();
+      const profile = await liff.getProfile();
+
+      form.append("action", "REQ_CANCEL");
+      form.append("db_token", API_TOKEN);
+      form.append("db_ApiKey", DB_API_KEY);
+      form.append("recruitmentID", recruitmentID.value);
+      form.append("LineID", profile.userId);
+
+      const response = await fetch(DEMO_API, { method: "POST", body: form });
+      const j = await response.json();
+
+      if (j && j.status === "REQ_CANCEL") {
+        await loadRecruitmentData();
+        await closeCancelConfirmModal();
+        go('RecruitmentList');
+      }
+    }
+
 
     // ----------------------
     // 応募情報をDBに保存する処理
@@ -1055,13 +1180,13 @@
     async function loadApplyData() {
       try {
         await getDB_tk();
-        // const profile = await liff.getProfile();
+        const profile = await liff.getProfile();
 
         const form = new FormData();
         form.append("action", "OuboIchiranHyouzi");
         form.append("db_token", API_TOKEN);
         form.append("db_ApiKey", DB_API_KEY);
-        form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
+        form.append("LineID", profile.userId);
 
         const response = await fetch(DEMO_API, { method: "POST", body: form });
         const data = await response.json();
