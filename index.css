@@ -148,6 +148,7 @@ html, body {
 .home-card--recruitment { background: #d9f2df; }
 .home-card--list { background: #e6f6e9; }
 .home-card--approval { background: #d2eedc; }
+.home-card--registration { background: #e8f0ff; }
 
 @media screen and (max-width: 600px) {
   html {
@@ -215,6 +216,21 @@ html, body {
   background-color: #fbfcfd;
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recruitment-form .form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #00b900 50%),
+    linear-gradient(135deg, #00b900 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) calc(50% - 3px),
+    calc(100% - 16px) calc(50% - 3px);
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 46px;
 }
 
 .recruitment-form .form-group input:focus,
@@ -442,6 +458,92 @@ html, body {
   border: 1px solid #287c59;
   background: #087f8c;
   color: #ffffff;
+}
+
+.invite-modal__group {
+  display: grid;
+  gap: 12px;
+}
+
+.invite-modal__label {
+  color: #21433b;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.invite-modal__options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.invite-modal__option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #21433b;
+  font-size: 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.invite-modal__option.is-selected {
+  background: transparent;
+  box-shadow: none;
+}
+
+.invite-modal__option input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: #0f8f8f;
+}
+
+.invite-modal__option span {
+  display: inline-block;
+  min-width: 120px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.invite-modal__group input {
+  width: 25%; 
+  min-height: 20px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  border: 1px solid #cfe2d9;
+  border-radius: 10px;
+  background: #f7faf8;
+  color: #21433b;
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.invite-modal__copy {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid #287c59;
+  border-radius: 10px;
+  background: #087f8c;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 @media screen and (min-width: 701px) {

@@ -9,6 +9,9 @@
   <title>介護施設マッチング</title>
 </head>
 <body>
+  <div id="API_KEY" class="page"></div>
+  <div id="API_TOKEN" class="page"></div>
+
   <!-- TOPページ -->
   <div id="TOP" class="page active home-page">
     <div class="home-page__content">
@@ -35,12 +38,118 @@
           <span class="home-card__label">受入れ応募一覧</span>
           <span class="home-card__description">応募者を確認</span>
         </button>
+
+        <button onclick="go('UserRegistration')" class="home__buttons__button home-card home-card--approval">
+          <span class="home-card__icon" aria-hidden="true">✓</span>
+          <span class="home-card__label">ユーザ情報登録</span>
+          <span class="home-card__description">確認用</span>
+        </button>
+
+        <button id="userInviteButton" type="button" onclick="openUserInviteModal()" class="home__buttons__button home-card home-card--approval" style="display: none;">
+          <span class="home-card__icon" aria-hidden="true">✓</span>
+          <span class="home-card__label">ユーザ招待</span>
+          <span class="home-card__description">管理者にのみ招待可能</span>
+        </button>
       </div>
     </div>
   </div>
 
-  <div id="API_KEY" class="page"></div>
-  <div id="API_TOKEN" class="page"></div>
+  <!-- ユーザ情報登録ページ -->
+  <div id="UserRegistration" class="page">
+    <div class="recruitment-form">
+      <div class="step-header">
+        <label class="list-title">ユーザ情報登録</label>
+      </div>
+
+      <form id="userRegistrationForm" onsubmit="registerUser(event)" novalidate>
+        <div class="form-group">
+          <label for="userRegistrationCompId">事業所番号 <span style="color: #dc3545;">*必須</span></label>
+          <input type="text" id="userRegistrationCompId" name="userRegistrationCompId" placeholder="例：1234567890" required />
+        </div>
+
+        <div class="form-group">
+          <label for="userRegistrationName">氏名 <span style="color: #dc3545;">*必須</span></label>
+          <input type="text" id="userRegistrationName" name="userRegistrationName" placeholder="例：山田太郎" required />
+        </div>
+
+        <div class="form-group">
+          <label for="userRegistrationEmail">メールアドレス <span style="color: #dc3545;">*必須</span></label>
+          <input type="email" id="userRegistrationEmail" name="userRegistrationEmail" placeholder="例：example@example.com" autocomplete="email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="userRegistrationPhone">電話番号 <span style="color: #dc3545;">*必須</span></label>
+          <input type="tel" id="userRegistrationPhone" name="userRegistrationPhone" placeholder="例：090-1234-5678" autocomplete="tel" required />
+        </div>
+
+        <div class="form-group">
+          <label for="userRegistrationPassword">パスワード <span style="color: #dc3545;">*必須</span></label>
+          <input type="password" id="userRegistrationPassword" name="userRegistrationPassword" placeholder="パスワードを入力してください" autocomplete="new-password" required />
+        </div>
+
+        <!-- 権限用(非表示) -->
+        <input id="EmployAuth" name="EmployAuth" />
+
+        <p id="userRegistrationMessage" class="validation-message" role="alert" aria-live="polite" hidden></p>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-submit">登録する</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ユーザ情報登録完了ページ -->
+  <div id="UserRegistrationComplete" class="page">
+    <div class="recruitment-form">
+      <div class="completion-container">
+        <div class="completion-card">
+          <div class="completion-icon">✓</div>
+          <h1 class="completion-title">ユーザ情報を登録しました！</h1>
+          <p class="completion-message">メールアドレスに公式アカウントの情報を送信しました。<br>メールもしくは下のボタンから<br>公式アカウントを追加してください。</p>
+          <img src="https://qr-official.line.me/gs/M_427kovzc_GW.png?oat_content=qr">
+          <a href="https://lin.ee/vdc5DsX"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="36" border="0"></a>
+          <div class="completion-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeMiniApp()">閉じる</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ユーザー招待モーダル -->
+  <div id="userInviteModal" class="filter-modal" role="dialog" aria-modal="true" aria-labelledby="userInviteTitle" aria-hidden="true">
+    <div class="filter-modal__backdrop" onclick="closeUserInviteModal()"></div>
+    <section class="filter-modal__sheet invite-modal__sheet">
+      <div class="filter-modal__header">
+        <h2 id="userInviteTitle">ユーザー招待</h2>
+        <button type="button" class="filter-modal__close" onclick="closeUserInviteModal()" aria-label="閉じる">×</button>
+      </div>
+
+      <div class="filter-modal__content">
+        <div class="invite-modal__group">
+          <label class="invite-modal__label">招待するユーザー</label>
+          <div class="invite-modal__options">
+            <label class="invite-modal__option">
+              <input type="radio" name="userInviteType" value="0" checked>
+              <span>一般ユーザー</span>
+            </label>
+            <label class="invite-modal__option">
+              <input type="radio" name="userInviteType" value="2">
+              <span>管理ユーザー</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="invite-modal__group">
+          <label for="userInviteLink" class="invite-modal__label">招待URL</label>
+          <input id="userInviteLink" type="text" readonly value="https://example.com/invite/general">
+          <label class="invite-modal__description">このURLをコピーして、招待したいユーザーに送信してください。</label>
+          <button type="button" class="invite-modal__copy" onclick="copyInviteLink()">コピー</button>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <!-- 施設募集ページ -->
   <div id="Recruitment" class="page">
@@ -158,22 +267,9 @@
         ></textarea>
       </div>
 
-      <!-- プロンプト作成ボタン -->
-      <!--<button class="btn-build" onclick="generatePrompt()">プロンプト作成</button>-->
-
-      <!-- プロンプト表示・編集用エリア -->
-       <!--
-      <div class="form-group">
-        <label for="generatedPrompt">作成されたプロンプト（編集可）</label>
-        -->
-        <input type="hidden" id="generatedPrompt" placeholder="プロンプト作成ボタンを押すとここに生成されます">
-      <!--</div>-->
-
-      <!-- 紹介文生成ボタン -->
-       <!--
-      <button id="sendBtn" class="btn-send" onclick="askGemini()">紹介文生成</button>
-      -->
-      <!-- プロンプト生成 + 紹介文生成ボタン-->
+      <input type="hidden" id="generatedPrompt" placeholder="プロンプト作成ボタンを押すとここに生成されます">
+      
+        <!-- プロンプト生成 + 紹介文生成ボタン-->
       <button id="sendBtn" type="button" class="btn-send" onclick="generatePrompt()" disabled>紹介文生成</button>
       
 
@@ -565,6 +661,18 @@
     });
 
     // ----------------------
+    // ユーザ情報登録ページのEmployAuthをURLクエリから取得
+    // ----------------------
+    function applyEmployAuthFromUrl() {
+      const hiddenInput = document.getElementById("EmployAuth");
+      if (!hiddenInput) return;
+
+      const params = new URLSearchParams(window.location.search);
+      const employAuth = params.get("EmployAuth");
+      hiddenInput.value = ["0", "2"].includes(employAuth) ? employAuth : "";
+    }
+
+    // ----------------------
     // 画面切り替え処理
     // ----------------------
     function go(id) {
@@ -578,6 +686,10 @@
       if (target) {
         target.style.display = "block";
       }
+
+      if (id === "UserRegistration") {
+        applyEmployAuthFromUrl();
+      }
     }
 
     // ----------------------
@@ -589,6 +701,76 @@
       } else {
         alert("ブラウザでは実行できません");
       }
+    }
+
+    // 招待URL管理
+    const USER_INVITE_LINKS = {
+      0: 'https://miniapp.line.me/2009866730-52c8hXB5/?page=UserRegistration&EmployAuth=0',
+      2: 'https://miniapp.line.me/2009866730-52c8hXB5/?page=UserRegistration&EmployAuth=2'
+    };
+
+    function updateInviteLink() {
+      const selectedType = document.querySelector('input[name="userInviteType"]:checked')?.value || '0';
+      const inviteLink = document.getElementById('userInviteLink');
+      if (!inviteLink) return;
+      inviteLink.value = USER_INVITE_LINKS[selectedType] || USER_INVITE_LINKS[0];
+    }
+
+    function openUserInviteModal() {
+      const modal = document.getElementById('userInviteModal');
+      if (!modal) return;
+      updateInviteLink();
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('filter-modal-open');
+    }
+
+    function closeUserInviteModal() {
+      const modal = document.getElementById('userInviteModal');
+      if (!modal) return;
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('filter-modal-open');
+    }
+
+    async function copyInviteLink() {
+      const inviteLink = document.getElementById('userInviteLink');
+      if (!inviteLink) return;
+
+      const text = inviteLink.value;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          inviteLink.focus();
+          inviteLink.select();
+          document.execCommand('copy');
+        }
+        const copyButton = document.querySelector('.invite-modal__copy');
+        if (copyButton) {
+          const originalText = copyButton.textContent;
+          copyButton.textContent = 'コピーしました';
+          setTimeout(() => {
+            copyButton.textContent = originalText;
+          }, 1200);
+        }
+      } catch (error) {
+        console.error('招待URLのコピーに失敗しました。', error);
+        alert('招待URLのコピーに失敗しました。');
+      }
+    }
+
+    document.querySelectorAll('input[name="userInviteType"]').forEach((radio) => {
+      radio.addEventListener('change', updateInviteLink);
+    });
+
+    function updateUserInviteButtonVisibility() {
+      const button = document.getElementById('userInviteButton');
+      if (!button) return;
+
+      const userData = Array.isArray(UserData) && UserData.length > 0 ? UserData[0] : null;
+      const employAuth = Number(userData?.EMPLOY_AUTH ?? -1);
+      const canInvite = [2, 5].includes(employAuth);
+
+      button.style.display = canInvite ? '' : 'none';
     }
 
     // ----------------------
@@ -609,7 +791,6 @@
         form.append("db_token", API_TOKEN);
         form.append("db_ApiKey", DB_API_KEY);
         form.append("LineID", profile.userId);
-        // form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
 
         const response = await fetch(DEMO_API, { method: "POST", body: form });
         const data = await response.json();
@@ -624,7 +805,10 @@
           updateRecruitmentPromptButtonState();
           //応募ページの担当者名を自動入力
           document.getElementById("applydetailManagerName").value =userData.NAME || "";
+          updateUserInviteButtonVisibility();
         } else {
+          UserData = [];
+          updateUserInviteButtonVisibility();
           console.error("ユーザー情報の取得に失敗しました。", data);
         }
       } catch (error) {
@@ -632,6 +816,136 @@
         console.error("ユーザー情報の取得中にエラーが発生しました。", error);
       }      
     }
+
+    // ----------------------
+    // ユーザ情報登録の入力チェック処理
+    // ----------------------
+    function validateUserRegistrationForm() {
+      const requiredFields = [
+        { id: "userRegistrationCompId", label: "事業所番号" },
+        { id: "userRegistrationName", label: "氏名" },
+        { id: "userRegistrationEmail", label: "メールアドレス" },
+        { id: "userRegistrationPhone", label: "電話番号" },
+        { id: "userRegistrationPassword", label: "パスワード" }
+      ];
+
+      const validationMessage = document.getElementById("userRegistrationMessage");
+      const missingField = requiredFields.find(({ id }) => {
+        const field = document.getElementById(id);
+        return !field || !field.value.trim();
+      });
+
+      if (missingField) {
+        const field = document.getElementById(missingField.id);
+        validationMessage.textContent = `${missingField.label}を入力してください。`;
+        validationMessage.hidden = false;
+        field.focus();
+        return false;
+      }
+
+      const emailField = document.getElementById("userRegistrationEmail");
+      if (!emailField.checkValidity()) {
+        validationMessage.textContent = "正しいメールアドレスを入力してください。";
+        validationMessage.hidden = false;
+        emailField.focus();
+        return false;
+      }
+
+      validationMessage.textContent = "";
+      validationMessage.hidden = true;
+      return true;
+    }
+
+    // ----------------------
+    // ユーザ情報をDBに登録する処理
+    // ----------------------
+    async function registerUser(event) {
+      event.preventDefault();
+
+      if (!validateUserRegistrationForm()) return;
+
+      const message = document.getElementById("userRegistrationMessage");
+      const submitButton = document.querySelector("#userRegistrationForm button[type='submit']");
+      const profile = await liff.getProfile();
+
+      message.hidden = true;
+      submitButton.disabled = true;
+
+      try {
+        await getDB_tk();
+
+        const form = new FormData();
+        form.append("action", "registerUser");
+        form.append("db_token", API_TOKEN);
+        form.append("db_ApiKey", DB_API_KEY);
+        form.append("LineID", profile.userId);
+        form.append("CompID", document.getElementById("userRegistrationCompId").value.trim());
+        form.append("Name", document.getElementById("userRegistrationName").value.trim());
+        form.append("Email", document.getElementById("userRegistrationEmail").value.trim());
+        form.append("Tel", document.getElementById("userRegistrationPhone").value.trim());
+        form.append("Password", document.getElementById("userRegistrationPassword").value);
+        form.append("EmployAuth", document.getElementById("EmployAuth").value);
+
+        const response = await fetch(DEMO_API, { method: "POST", body: form });
+        const result = await response.json();
+
+        if (!response.ok || !result || result.status !== "registerUser") {
+          throw new Error(result.error || "ユーザ情報の登録に失敗しました。");
+        }
+
+        const mailResponse = await fetch(SendMail_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            Email: document.getElementById("userRegistrationEmail").value.trim()
+          })
+        });
+        const mailResult = await mailResponse.json();
+
+        const responseText = await response.text();
+        console.log("HTTPステータス:", response.status);
+        console.log("PHPからのレスポンス:", responseText);
+
+        // if (!mailResponse.ok || !mailResult || mailResult.status !== "sent") {
+        //   message.textContent = "ユーザ情報は登録しましたが、メール送信に失敗しました。";
+        //   message.hidden = false;
+        //   return;
+        // }
+
+        message.textContent = "ユーザ情報を登録し、メールを送信しました。";
+        message.hidden = false;
+        document.getElementById("userRegistrationForm").reset();
+        await getUserData();
+        go("UserRegistrationComplete");
+      } catch (error) {
+        console.error("ユーザ情報の登録中にエラーが発生しました。", error);
+        message.textContent = error.message || "ユーザ情報の登録に失敗しました。";
+        message.hidden = false;
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    // ----------------------
+    // 電話番号の入力整形
+    // ----------------------
+    function formatUserRegistrationPhone(event) {
+      const phoneField = event.target;
+      const digits = phoneField.value.replace(/\D/g, "").slice(0, 11);
+      const isTwoDigitAreaCode = /^(03|06)/.test(digits);
+      const firstGroupLength = isTwoDigitAreaCode ? 2 : 3;
+      const firstGroup = digits.slice(0, firstGroupLength);
+      const secondGroup = digits.slice(firstGroupLength, firstGroupLength + 4);
+      const thirdGroup = digits.slice(firstGroupLength + 4, firstGroupLength + 8);
+
+      phoneField.value = [firstGroup, secondGroup, thirdGroup]
+        .filter(Boolean)
+        .join("-");
+    }
+
+    document
+      .getElementById("userRegistrationPhone")
+      .addEventListener("input", formatUserRegistrationPhone);
 
     // ----------------------
     // 募集情報の入力チェック処理
@@ -856,6 +1170,7 @@
       if (event.key === 'Escape') {
         closeRecruitmentFilter();
         closeApprovalFilter();
+        closeUserInviteModal();
       }
     });
 
