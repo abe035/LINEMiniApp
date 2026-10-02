@@ -428,6 +428,23 @@ html, body {
   font-size: 1rem;
 }
 
+.filter-modal__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  color: #21433b;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.filter-modal__checkbox input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: #0f8f8f;
+}
+
 .filter-modal__actions {
   display: flex;
   gap: 10px;
