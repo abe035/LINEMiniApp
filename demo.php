@@ -104,33 +104,151 @@ switch ($action) {
     // ユーザ情報の登録
     // -------------------------
     case "registerUser":
-        $stmt = $pdo->prepare("
-            INSERT INTO EMPLOY_TBL (
-                COMP_ID,
-                LINE_ID,
-                EMPLOY_PASSWORD,
-                PHONE,
-                MAIL,
-                NAME
-            ) VALUES (
-                :COMP_ID,
-                :LINE_ID,
-                :EMPLOY_PASSWORD,
-                :PHONE,
-                :MAIL,
-                :NAME
-            )
-        ");
-        $stmt->execute([
-            ":COMP_ID" => $_POST["CompID"] ?? "",
-            ":LINE_ID" => $_POST["LineID"] ?? "",
-            ":EMPLOY_PASSWORD" => $_POST["Password"] ?? "",
-            ":PHONE" => $_POST["Tel"] ?? "",
-            ":MAIL" => $_POST["Email"] ?? "",            
-            ":NAME" => $_POST["Name"] ?? ""
-        ]);
+        $officesJson = $_POST["Offices"] ?? "";
+        $offices = is_string($officesJson) ? json_decode($officesJson, true) : null;
+        if (!is_array($offices) || count($offices) === 0) {
+            http_response_code(400);
+            echo json_encode(["error" => "所属事業所を1件以上入力してください。"]);
+            break;
+        }
+        $normalizedOffices = [];
+        foreach ($offices as $office) {
+            if (
+                !is_array($office)
+                || !isset($office["compId"], $office["compName"])
+                || !is_string($office["compId"])
+                || !is_string($office["compName"])
+            ) {
+                http_response_code(400);
+                echo json_encode(["error" => "事業所番号と事業所名を正しく入力してください。"]);
+                break 2;
+            }
 
-        echo json_encode(["status" => "registerUser"]);
+            $compId = trim($office["compId"]);
+            $compName = trim($office["compName"]);
+            if ($compId === "" || $compName === "") {
+                http_response_code(400);
+                echo json_encode(["error" => "事業所番号と事業所名を入力してください。"]);
+                break 2;
+            }
+            if (in_array($compId, array_column($normalizedOffices, "compId"), true)) {
+                http_response_code(400);
+                echo json_encode(["error" => "同じ事業所番号を重複して登録することはできません。"]);
+                break 2;
+            }
+
+            $normalizedOffices[] = [
+                "compId" => $compId,
+                "compName" => $compName
+            ];
+        }
+
+        $inviteToken = $_POST["InviteToken"] ?? "";
+        $requestedAuth = $_POST["EmployAuth"] ?? "";
+        if (
+            !is_string($inviteToken)
+            || !preg_match('/\A[a-f0-9]{62}(?:00|02)\z/', $inviteToken)
+            || !in_array($requestedAuth, ["0", "2"], true)
+            || hexdec(substr($inviteToken, -2)) !== (int)$requestedAuth
+        ) {
+            http_response_code(403);
+            echo json_encode(["error" => "招待リンクが無効または期限切れです。"]);
+            break;
+        }
+        $inviteAuth = hexdec(substr($inviteToken, -2));
+
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare("
+                SELECT EXPIRES_AT, USED
+                FROM QR_TOKEN_TBL
+                WHERE TOKEN = :token
+                FOR UPDATE
+            ");
+            $stmt->execute([":token" => $inviteToken]);
+            $invite = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (
+                !$invite
+                || (int)$invite["USED"] !== 0
+                || strtotime($invite["EXPIRES_AT"] . " UTC") <= time()
+            ) {
+                $pdo->rollBack();
+                http_response_code(403);
+                echo json_encode(["error" => "招待リンクが無効または期限切れです。"]);
+                break;
+            }
+
+            $officeStatement = $pdo->prepare("
+                SELECT COMP_NAME
+                FROM SISETU_TBL
+                WHERE COMP_ID = :COMP_ID
+                LIMIT 1
+            ");
+            foreach ($normalizedOffices as $office) {
+                $officeStatement->execute([":COMP_ID" => $office["compId"]]);
+                $registeredOfficeName = $officeStatement->fetchColumn();
+                if (
+                    $registeredOfficeName === false
+                    || trim((string)$registeredOfficeName) !== $office["compName"]
+                ) {
+                    $pdo->rollBack();
+                    http_response_code(400);
+                    echo json_encode(["error" => "事業所番号と事業所名が登録情報と一致しません。"]);
+                    break 2;
+                }
+            }
+
+            $stmt = $pdo->prepare("
+                UPDATE QR_TOKEN_TBL
+                SET USED = 1, USED_AT = UTC_TIMESTAMP()
+                WHERE TOKEN = :token AND USED = 0
+            ");
+            $stmt->execute([":token" => $inviteToken]);
+            if ($stmt->rowCount() !== 1) {
+                $pdo->rollBack();
+                http_response_code(403);
+                echo json_encode(["error" => "招待リンクが無効または期限切れです。"]);
+                break;
+            }
+
+            $stmt = $pdo->prepare("
+                INSERT INTO EMPLOY_TBL (
+                    COMP_ID,
+                    LINE_ID,
+                    EMPLOY_PASSWORD,
+                    PHONE,
+                    MAIL,
+                    NAME,
+                    EMPLOY_AUTH
+                ) VALUES (
+                    :COMP_ID,
+                    :LINE_ID,
+                    :EMPLOY_PASSWORD,
+                    :PHONE,
+                    :MAIL,
+                    :NAME,
+                    :EMPLOY_AUTH
+                )
+            ");
+            foreach ($normalizedOffices as $office) {
+                $stmt->execute([
+                    ":COMP_ID" => $office["compId"],
+                    ":LINE_ID" => $_POST["LineID"] ?? "",
+                    ":EMPLOY_PASSWORD" => $_POST["Password"] ?? "",
+                    ":PHONE" => $_POST["Tel"] ?? "",
+                    ":MAIL" => $_POST["Email"] ?? "",
+                    ":NAME" => $_POST["Name"] ?? "",
+                    ":EMPLOY_AUTH" => $inviteAuth
+                ]);
+            }
+            $pdo->commit();
+            echo json_encode(["status" => "registerUser"]);
+        } catch (Throwable $error) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $error;
+        }
         break;
 
     // -------------------------
@@ -139,6 +257,7 @@ switch ($action) {
     case "Bosyuu":
         $stmt = $pdo->query("SELECT COALESCE(MAX(REQ_ID), 0) + 1 AS next_id FROM REQ_TBL");
         $nextId = $stmt->fetchColumn();
+        $recruitmentName = trim($_POST["recruitmentName"] ?? '') ?: '(仮)Y.T';
 
         $stmt = $pdo->prepare("
             INSERT INTO `REQ_TBL` (
@@ -181,7 +300,7 @@ switch ($action) {
             ":COMP_NAME" => $_POST["recruitmentCompName"] ?? '',
             ":NAME" => $_POST["recruitmentManagerName"] ?? '',
             ":START" => $_POST["recruitmentStartDateTime"] ?? null,
-            ":USER_NAME" => $_POST["recruitmentName"] ?? '',
+            ":USER_NAME" => $recruitmentName,
             ":AGE" => $_POST["recruitmentAge"] ?? 0,
             ":SEX" => $_POST["recruitmentGender"] ?? '',
             ":CARE_LEVEL" => $_POST["recruitmentCareLevel"] ?? 0,
@@ -239,7 +358,7 @@ switch ($action) {
         $stmt = $pdo->prepare("
             SELECT * 
             FROM REQ_TBL 
-            WHERE FLAG = 0 AND DELETE_FLAG = 0 AND REQ_ID = :REQ_ID
+            WHERE REQ_ID = :REQ_ID
         ");
         $stmt->execute([
             ":REQ_ID" => $_POST["recruitmentID"]
@@ -297,6 +416,22 @@ switch ($action) {
     // 応募情報の取得(応募情報一覧表示)
     //-------------------------
     case "OuboIchiranHyouzi":
+        $showMatched = !empty($_POST["showMatched"]) && $_POST["showMatched"] === "1";
+        $recruitmentAccessCondition = "
+            (
+                REQ.CREATE_BY = :OwnerLineID
+                OR EXISTS (
+                    SELECT 1
+                    FROM EMPLOY_TBL VIEWER
+                    WHERE VIEWER.LINE_ID = :ViewerLineID
+                        AND VIEWER.COMP_ID = REQ.COMP_ID
+                )
+            )
+        ";
+        $matchingCondition = $showMatched
+            ? "RES.DELETE_FLAG = 0 AND {$recruitmentAccessCondition}"
+            : "RES.MATCHING = 0 AND REQ.FLAG = 0 AND RES.DELETE_FLAG = 0 AND {$recruitmentAccessCondition}";
+
         $stmt = $pdo->prepare("
             SELECT *, 
 			REQ.REQ_ID AS REQ_REQ_ID,
@@ -310,16 +445,18 @@ switch ($action) {
             REQ.NAME AS REQ_NAME,
             RES.NAME AS RES_NAME,
             REQ.DELETE_FLAG AS REQ_DELETE_FLAG,
-            RES.DELETE_FLAG AS RES_DELETE_FLAG
+            RES.DELETE_FLAG AS RES_DELETE_FLAG,
+            RES.MATCHING AS RES_MATCHING
             FROM RES_TBL RES 
             INNER JOIN REQ_TBL REQ 
                 ON RES.REQ_ID = REQ.REQ_ID 
             INNER JOIN SISETU_TBL SISETU 
                 ON RES.COMP_ID = SISETU.COMP_ID 
-            WHERE RES.MATCHING = 0 AND REQ.FLAG = 0 AND RES.DELETE_FLAG = 0 AND REQ.CREATE_BY = :LineID
+            WHERE {$matchingCondition}
         ");
         $stmt->execute([
-            ":LineID" => $_POST["LineID"]
+            ":OwnerLineID" => $_POST["LineID"],
+            ":ViewerLineID" => $_POST["LineID"]
 	    ]);
 
         echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
@@ -340,13 +477,14 @@ switch ($action) {
             REQ.NAME AS REQ_NAME,
             RES.NAME AS RES_NAME,
             REQ.DELETE_FLAG AS REQ_DELETE_FLAG,
-            RES.DELETE_FLAG AS RES_DELETE_FLAG
+            RES.DELETE_FLAG AS RES_DELETE_FLAG,
+            RES.MATCHING AS RES_MATCHING
             FROM RES_TBL RES 
             INNER JOIN REQ_TBL REQ 
                 ON RES.REQ_ID = REQ.REQ_ID 
             INNER JOIN SISETU_TBL SISETU 
                 ON RES.COMP_ID = SISETU.COMP_ID 
-            WHERE RES.MATCHING = 0 AND REQ.FLAG = 0 AND RES.DELETE_FLAG = 0 AND RES_ID = :RES_ID
+            WHERE RES_ID = :RES_ID
         ");
         $stmt->execute([
             ":RES_ID" => $_POST["ApprovalID"]

@@ -6,7 +6,7 @@
   <script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="index.css" />
-  <title>介護施設マッチング</title>
+  <title>CareRing虹の架け橋</title>
 </head>
 <body>
   <div id="API_KEY" class="page"></div>
@@ -16,9 +16,8 @@
   <div id="TOP" class="page active home-page">
     <div class="home-page__content">
       <div class="home-page__intro">
-        <span class="home-page__eyebrow">CARE MATCHING</span>
-        <h1 class="home__title">介護施設マッチング</h1>
-        <p class="home-page__lead">介護施設と利用者様をつなぐ</p>
+        <h1 class="home__title">CareRing虹の架け橋</h1>
+        <p class="home-page__lead">つながる介護マッチングアプリ</p>
       </div>
 
       <div class="home__buttons">
@@ -44,6 +43,12 @@
           <span class="home-card__label">ユーザ招待</span>
           <span class="home-card__description">管理者にのみ招待可能</span>
         </button>
+
+        <button onclick="go('UserRegistration')" class="home__buttons__button home-card home-card--approval">
+          <span class="home-card__icon" aria-hidden="true">✓</span>
+          <span class="home-card__label">登録ページ</span>
+          <span class="home-card__description">ユーザ情報を登録</span>
+        </button>
       </div>
     </div>
   </div>
@@ -57,8 +62,34 @@
 
       <form id="userRegistrationForm" onsubmit="registerUser(event)" novalidate>
         <div class="form-group">
-          <label for="userRegistrationCompId">事業所番号 <span style="color: #dc3545;">*必須</span></label>
-          <input type="text" id="userRegistrationCompId" name="userRegistrationCompId" placeholder="例：1234567890" required />
+          <label>所属事業所 <span style="color: #dc3545;">*必須</span></label>
+          <p class="registration-office-help">所属する事業所番号と事業所名を入力してください。複数ある場合は追加できます。</p>
+          <div id="userRegistrationOffices">
+            <div class="registration-office-row" data-registration-office>
+              <div class="form-group">
+                <label for="userRegistrationCompId">事業所番号</label>
+                <input type="text" id="userRegistrationCompId" data-office-id placeholder="例：1234567890" required />
+              </div>
+              <div class="form-group">
+                <label for="userRegistrationCompName">事業所名</label>
+                <input type="text" id="userRegistrationCompName" data-office-name placeholder="例：〇〇介護事業所" required />
+              </div>
+            </div>
+          </div>
+          <template id="userRegistrationOfficeTemplate">
+            <div class="registration-office-row" data-registration-office>
+              <div class="form-group">
+                <label>事業所番号</label>
+                <input type="text" data-office-id placeholder="例：1234567890" required />
+              </div>
+              <div class="form-group">
+                <label>事業所名</label>
+                <input type="text" data-office-name placeholder="例：〇〇介護事業所" required />
+              </div>
+              <button type="button" class="registration-office-remove" data-remove-office>この事業所を削除</button>
+            </div>
+          </template>
+          <button type="button" id="addRegistrationOffice" class="registration-office-add">＋ 事業所を追加</button>
         </div>
 
         <div class="form-group">
@@ -67,8 +98,8 @@
         </div>
 
         <div class="form-group">
-          <label for="userRegistrationEmail">メールアドレス <span style="color: #dc3545;">*必須</span></label>
-          <input type="email" id="userRegistrationEmail" name="userRegistrationEmail" placeholder="例：example@example.com" autocomplete="email" required />
+          <label for="userRegistrationEmail">メールアドレス</label>
+          <input type="email" id="userRegistrationEmail" name="userRegistrationEmail" placeholder="例：example@example.com" autocomplete="email" />
         </div>
 
         <div class="form-group">
@@ -81,8 +112,14 @@
           <input type="password" id="userRegistrationPassword" name="userRegistrationPassword" placeholder="パスワードを入力してください" autocomplete="new-password" required />
         </div>
 
+        <div class="form-group">
+          <label for="userRegistrationPasswordConfirm">パスワード（確認用） <span style="color: #dc3545;">*必須</span></label>
+          <input type="password" id="userRegistrationPasswordConfirm" name="userRegistrationPasswordConfirm" placeholder="もう一度パスワードを入力してください" autocomplete="off" required />
+        </div>
+
         <!-- 権限用(非表示) -->
-        <input id="EmployAuth" name="EmployAuth" />
+        <input id="EmployAuth" name="EmployAuth" type="hidden"/>
+        <input id="InviteToken" name="InviteToken" type="hidden"/>
 
         <p id="userRegistrationMessage" class="validation-message" role="alert" aria-live="polite" hidden></p>
 
@@ -100,7 +137,7 @@
         <div class="completion-card">
           <div class="completion-icon">✓</div>
           <h1 class="completion-title">ユーザ情報を登録しました！</h1>
-          <p class="completion-message">メールアドレスに公式アカウントの情報を送信しました。<br>メールもしくは下のボタンから<br>公式アカウントを追加してください。</p>
+          <p class="completion-message">下のボタンから公式アカウントを追加してください。</p>
           <img src="https://qr-official.line.me/gs/M_427kovzc_GW.png?oat_content=qr">
           <a href="https://lin.ee/vdc5DsX"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="36" border="0"></a>
           <div class="completion-actions">
@@ -136,16 +173,25 @@
         </div>
 
         <div class="invite-modal__group">
-          <label for="userInviteLink" class="invite-modal__label">招待URL</label>
-          <input id="userInviteLink" type="text" readonly value="https://example.com/invite/general">
-          <label class="invite-modal__description">このURLをコピーして、招待したいユーザーに送信してください。</label>
-          <button type="button" class="invite-modal__copy" onclick="copyInviteLink()">コピー</button>
+          <span class="invite-modal__label">招待用QRコード</span>
+          <p class="invite-modal__description">QRコードを招待したいユーザーへ送信してください。作成から10分間有効です。</p>
+          <div id="userInviteQrContainer" class="invite-modal__qr" role="img" aria-label="選択したユーザー種別の招待用QRコード" hidden>
+            <canvas id="userInviteQrCode" aria-hidden="true"></canvas>
+          </div>
+          <p id="inviteQrMessage" class="invite-modal__qr-message" role="status" aria-live="polite"></p>
+          <button type="button" id="generateInviteQrCodeButton" class="invite-modal__button" onclick="generateInviteQrCode()">QRコード作成</button>
+          <button type="button" id="saveInviteQrCodeButton" class="invite-modal__button" onclick="saveInviteQrCode()" hidden>画像として保存または共有</button>
         </div>
       </div>
     </section>
   </div>
 
-  <!-- 施設募集ページ -->
+  <dialog id="alreadyRegisteredDialog" class="notice-dialog" aria-labelledby="alreadyRegisteredTitle">
+    <h2 id="alreadyRegisteredTitle" class="notice-dialog__title">既に登録されています。</h2>
+    <button type="button" class="btn btn-submit" onclick="closeAlreadyRegisteredDialog()">OK</button>
+  </dialog>
+
+  <!-- 募集ページ -->
   <div id="Recruitment" class="page">
     <div class="recruitment-form">
       <input type="hidden" id="recruitmentID" name="recruitmentID" />
@@ -155,25 +201,27 @@
       </div>
 
       <div class="form-group">
-          <label for="recruitmentCompId">事業所番号<span style="color: #dc3545;">*必須</span></label>
-          <input
-            type="text"
-            id="recruitmentCompId"
-            name="recruitmentCompId"
-            placeholder="例：1234567890"
+          <label for="recruitmentCompName">事業所名<span style="color: #dc3545;">*必須</span></label>
+          <select
+            id="recruitmentCompName"
+            name="recruitmentCompName"
+            class="recruitment-office-select"
             required
-          />
+          >
+            <option value="">事業所名を選択してください</option>
+          </select>
       </div>
 
       <div class="form-group">
-          <label for="recruitmentCompName">事業所名<span style="color: #dc3545;">*必須</span></label>
-          <input
-            type="text"
-            id="recruitmentCompName"
-            name="recruitmentCompName"
-            placeholder="例：○○介護施設"
+          <label for="recruitmentCompId">事業所番号<span style="color: #dc3545;">*必須</span></label>
+          <select
+            id="recruitmentCompId"
+            name="recruitmentCompId"
+            class="recruitment-office-select"
             required
-          />
+          >
+            <option value="">事業所番号を選択してください</option>
+          </select>
       </div>
 
       <div class="form-group">
@@ -188,13 +236,12 @@
       </div>
 
       <div class="form-group">
-          <label for="recruitmentName">利用者様(イニシャル) <span style="color: #dc3545;">*必須</span></label>
+          <label for="recruitmentName">利用者様（イニシャルで入力してください）</label>
           <input
             type="text"
             id="recruitmentName"
             name="recruitmentName"
-            placeholder="例：YT"
-            required
+            placeholder="例：山田太郎 → Y.T"
           />
       </div>
 
@@ -310,10 +357,26 @@
       <h1 class="list-title">新規相談一覧</h1>
 
       <div class="list-controls">
-        <button type="button" class="list-filter-trigger" onclick="openRecruitmentFilter()" aria-haspopup="dialog" aria-controls="recruitmentFilterModal">
-          <span>絞り込み・並べ替え</span>
-          <span class="list-filter-trigger__chevron" aria-hidden="true">›</span>
+        <button type="button" id="recruitmentSortTrigger" class="recruitment-control-button" onclick="openRecruitmentFilter('sort')" aria-haspopup="dialog" aria-controls="recruitmentFilterModal">
+          <span class="recruitment-control-button__icon" aria-hidden="true">↕</span>
+          <span id="recruitmentSortTriggerLabel">募集順</span>
         </button>
+        <button type="button" class="recruitment-control-button" onclick="openRecruitmentFilter('filter')" aria-haspopup="dialog" aria-controls="recruitmentFilterModal">
+          <span class="recruitment-control-button__icon" aria-hidden="true">☷</span>
+          <span>絞り込み</span>
+          <span id="recruitmentFilterCount" class="recruitment-control-button__count" hidden></span>
+        </button>
+      </div>
+
+      <div class="recruitment-quick-filters" aria-label="募集一覧のクイック絞り込み">
+        <label class="recruitment-quick-filter" for="applicationFilter">
+          <input id="applicationFilter" type="checkbox">
+          <span>応募した新規相談を表示</span>
+        </label>
+        <label class="recruitment-quick-filter" for="endedRecruitmentFilter">
+          <input id="endedRecruitmentFilter" type="checkbox">
+          <span>募集終了したものも表示</span>
+        </label>
       </div>
 
       <div class="recruitment-list" id="recruitmentListContainer">
@@ -330,33 +393,25 @@
         </div>
 
         <div class="filter-modal__content">
-          <div class="filter-modal__group">
+          <div class="filter-modal__group" data-recruitment-filter-section="filter">
             <label for="facilityFilter" class="filter-modal__label">要介護度</label>
             <select id="facilityFilter" class="list-filter-select">
               <option value="all">すべて</option>
             </select>
           </div>
 
-          <div class="filter-modal__group">
-            <span class="filter-modal__label">応募状況</span>
-            <label for="applicationFilter" class="filter-modal__checkbox">
-              <input id="applicationFilter" type="checkbox">
-              <span>応募済み</span>
-            </label>
-          </div>
-
-          <div class="filter-modal__group">
-            <label for="recruitmentSort" class="filter-modal__label">並べ替え</label>
+          <div class="filter-modal__group" data-recruitment-filter-section="sort">
+            <label for="recruitmentSort" class="filter-modal__label">メニューから選択</label>
             <select id="recruitmentSort" class="list-filter-select">
               <option value="recruitment">募集順</option>
-              <option value="careLevel">介護レベル順</option>
+              <option value="careLevel">要介護度順</option>
               <option value="startDate">利用開始予定日順</option>
             </select>
           </div>
         </div>
 
         <div class="filter-modal__actions">
-          <button type="button" class="filter-modal__clear" onclick="clearRecruitmentFilter()">絞り込みを解除</button>
+          <button type="button" id="recruitmentFilterClearButton" class="filter-modal__clear" onclick="clearRecruitmentFilter()">絞り込みを解除</button>
           <button type="button" class="filter-modal__apply" onclick="applyRecruitmentFilter()">結果を表示</button>
         </div>
       </section>
@@ -454,14 +509,28 @@
         <input type="hidden" id="applydetailManagerName" name="applydetailManagerName" />
 
         <div class="form-group">
+          <label for="applyOfficeName">事業所名</label>
+          <input
+            type="text"
+            id="applyOfficeName"
+            name="applyOfficeName"
+            list="applyOfficeNameOptions"
+            placeholder="例：○○介護施設"
+          />
+          <datalist id="applyOfficeNameOptions"></datalist>
+        </div>
+
+        <div class="form-group">
           <label for="applyOfficeNumber">事業所番号 <span style="color: #dc3545;">*</span></label>
           <input
             type="text"
             id="applyOfficeNumber"
             name="applyOfficeNumber"
-            placeholder="例：123456"
+            list="applyOfficeNumberOptions"
+            placeholder="例：1234567890"
             required
           />
+          <datalist id="applyOfficeNumberOptions"></datalist>
         </div>
 
         <div class="form-actions">
@@ -500,10 +569,22 @@
       <h1 class="list-title">受入れ応募一覧</h1>
 
       <div class="list-controls">
-        <button type="button" class="list-filter-trigger" onclick="openApprovalFilter()" aria-haspopup="dialog" aria-controls="approvalFilterModal">
-          <span>絞り込み・並べ替え</span>
-          <span class="list-filter-trigger__chevron" aria-hidden="true">›</span>
+        <button type="button" class="recruitment-control-button" onclick="openApprovalFilter('sort')" aria-haspopup="dialog" aria-controls="approvalFilterModal">
+          <span class="recruitment-control-button__icon" aria-hidden="true">↕</span>
+          <span id="approvalSortTriggerLabel">応募順</span>
         </button>
+        <button type="button" class="recruitment-control-button" onclick="openApprovalFilter('filter')" aria-haspopup="dialog" aria-controls="approvalFilterModal">
+          <span class="recruitment-control-button__icon" aria-hidden="true">☷</span>
+          <span>絞り込み</span>
+          <span id="approvalFilterCount" class="recruitment-control-button__count" hidden></span>
+        </button>
+      </div>
+
+      <div class="recruitment-quick-filters" aria-label="受入れ応募一覧のクイック絞り込み">
+        <label class="recruitment-quick-filter" for="approvalMatchedFilter">
+          <input id="approvalMatchedFilter" type="checkbox">
+          <span>マッチング済みも表示</span>
+        </label>
       </div>
 
       <div class="recruitment-list" id="approvalListContainer">
@@ -520,14 +601,14 @@
         </div>
 
         <div class="filter-modal__content">
-          <div class="filter-modal__group">
+          <div class="filter-modal__group" data-approval-filter-section="filter">
             <label for="approvalFacilityFilter" class="filter-modal__label">利用者様</label>
             <select id="approvalFacilityFilter" class="list-filter-select">
             </select>
           </div>
 
-          <div class="filter-modal__group">
-            <label for="approvalSort" class="filter-modal__label">並べ替え</label>
+          <div class="filter-modal__group" data-approval-filter-section="sort">
+            <label for="approvalSort" class="filter-modal__label">メニューから選択</label>
             <select id="approvalSort" class="list-filter-select">
               <option value="application">応募順</option>
               <option value="facility">施設名順</option>
@@ -536,6 +617,7 @@
         </div>
 
         <div class="filter-modal__actions">
+          <button type="button" id="approvalFilterClearButton" class="filter-modal__clear" onclick="clearApprovalFilter()">絞り込みを解除</button>
           <button type="button" class="filter-modal__apply" onclick="applyApprovalFilter()">結果を表示</button>
         </div>
       </section>
@@ -580,7 +662,7 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn btn-submit" onclick="changeFlag()">承認する</button>
+        <button type="button" id="approvalConfirmButton" class="btn btn-submit" onclick="changeFlag()">承認する</button>
         <button type="button" class="btn btn-reset" onclick="go('Approval')">戻る</button>
       </div>
     </div>
@@ -614,12 +696,28 @@
       script.onload = async () => {
         // LIFF IDはLIFF URLの末尾に表示されるIDを使用
         await liff.init({ liffId: "2009866730-52c8hXB5" });
-        await getUserData();
-
-        // URLクエリに"page"パラメータがあればそのページを表示
         const params = new URLSearchParams(window.location.search);
         const page = params.get("page");
 
+        if (page === "UserRegistration") {
+          const inviteStatus = await verifyInviteToken(
+            params.get("InviteToken"),
+            params.get("EmployAuth")
+          );
+          if (inviteStatus !== "valid") {
+            const shouldRequestResend = confirm("招待QRコードの有効期限が切れています。\n再発行を依頼しますか？");
+            if (shouldRequestResend) {
+              await requestInviteResend();
+            } else {
+              closeMiniApp();
+            }
+            return;
+          }
+        }
+
+        await getUserData();
+
+        // URLクエリに"page"パラメータがあればそのページを表示
         if (page) {
           go(page);
         } else {
@@ -627,6 +725,73 @@
         }
       };
     };
+
+    async function verifyInviteToken(inviteToken, employAuth) {
+      if (!inviteToken || !["0", "2"].includes(employAuth)) return "invalid";
+
+      try {
+        const form = new FormData();
+        form.append("Action", "verify");
+        form.append("InviteToken", inviteToken);
+        form.append("EmployAuth", employAuth);
+
+        const response = await fetch(QR_TOKEN, { method: "POST", body: form });
+        if (!response.ok) return "invalid";
+        const result = await response.json();
+        if (result.expired === true || String(result.status || "").trim().toLowerCase() === "expired") {
+          return "expired";
+        }
+        if (result.valid === true || String(result.status || "").trim().toLowerCase() === "valid") {
+          return "valid";
+        }
+        return "invalid";
+      } catch (error) {
+        console.error("招待QRコードの有効性確認に失敗しました。", error);
+        return "invalid";
+      }
+    }
+
+    async function requestInviteResend() {
+      const inviteToken = new URLSearchParams(window.location.search).get("InviteToken");
+
+      try {
+        const response = await fetch(SaisouTuuchi_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ InviteToken: inviteToken })
+        });
+        const result = await response.json();
+        if (!response.ok || result.status !== "sent") {
+          throw new Error(result.error || "再送依頼を送信できませんでした。");
+        }
+
+        alert("招待用QRコードの発行者に再送を依頼しました。");
+      } catch (error) {
+        console.error("招待QRコードの再送依頼に失敗しました。", error);
+        alert(error.message || "再送依頼を送信できませんでした。時間をおいて再度お試しください。");
+      } finally {
+        closeMiniApp();
+      }
+    }
+
+    // ----------------------
+    // 初期化処理：ページ読み込み時に募集一覧と応募一覧を取得して表示する
+    // ----------------------
+    window.addEventListener('load', async () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('page') === 'UserRegistration') return;
+
+      // URLクエリに"recruitmentID"または"ApprovalID"があれば、該当する詳細ページを表示
+      if (params.get('recruitmentID')) {
+        await setRecruitmentDetail();
+      }else if (params.get('ApprovalID')) {
+        await setApprovalDetail();
+      }
+      await loadRecruitmentData();
+      await loadAppliedRecruitmentData();
+      await loadApplyData();
+      await renderApplyList();
+    });
 
     // ----------------------
     // APIトークン取得
@@ -647,38 +812,35 @@
     }
 
     // ----------------------
-    // 初期化処理：ページ読み込み時に募集一覧と応募一覧を取得して表示する
-    // ----------------------
-    window.addEventListener('load', async () => {
-      const params = new URLSearchParams(window.location.search);
-      // URLクエリに"recruitmentID"または"ApprovalID"があれば、該当する詳細ページを表示
-      if (params.get('recruitmentID')) {
-        await setRecruitmentDetail();
-      }else if (params.get('ApprovalID')) {
-        await setApprovalDetail();
-      }
-      await loadRecruitmentData();
-      await loadAppliedRecruitmentData();
-      await loadApplyData();
-      await renderApplyList();
-    });
-
-    // ----------------------
     // ユーザ情報登録ページのEmployAuthをURLクエリから取得
     // ----------------------
     function applyEmployAuthFromUrl() {
       const hiddenInput = document.getElementById("EmployAuth");
-      if (!hiddenInput) return;
+      const inviteTokenInput = document.getElementById("InviteToken");
+      if (!hiddenInput || !inviteTokenInput) return;
 
       const params = new URLSearchParams(window.location.search);
       const employAuth = params.get("EmployAuth");
       hiddenInput.value = ["0", "2"].includes(employAuth) ? employAuth : "";
+      inviteTokenInput.value = params.get("InviteToken") || "";
     }
 
     // ----------------------
     // 画面切り替え処理
     // ----------------------
     function go(id) {
+      if (id === "UserRegistration") {
+        if (!userDataLoaded) {
+          alert("登録状況を確認できませんでした。時間をおいて再度アクセスしてください。");
+          closeMiniApp();
+          return;
+        }
+        if (UserData.length > 0) {
+          document.getElementById("alreadyRegisteredDialog").showModal();
+          return;
+        }
+      }
+
       // 全てのページ要素を非表示にする
       document.querySelectorAll(".page").forEach(p => {
         p.style.display = "none";
@@ -706,25 +868,136 @@
       }
     }
 
-    // 招待URL管理
-    const USER_INVITE_LINKS = {
-      0: 'https://miniapp.line.me/2009866730-52c8hXB5/?page=UserRegistration&EmployAuth=0',
-      2: 'https://miniapp.line.me/2009866730-52c8hXB5/?page=UserRegistration&EmployAuth=2'
-    };
-
-    // 選択された権限に対応する招待URLを入力欄に設定する
-    function updateInviteLink() {
-      const selectedType = document.querySelector('input[name="userInviteType"]:checked')?.value || '0';
-      const inviteLink = document.getElementById('userInviteLink');
-      if (!inviteLink) return;
-      inviteLink.value = USER_INVITE_LINKS[selectedType] || USER_INVITE_LINKS[0];
+    function closeAlreadyRegisteredDialog() {
+      document.getElementById("alreadyRegisteredDialog").close();
+      if (liff.isInClient()) {
+        liff.closeWindow();
+      } else {
+        window.close();
+      }
     }
 
-    // 招待モーダルを開き、現在の選択内容に合わせてURLを更新する
+    // 選択された権限の期限付き招待URLからQRコードを生成する
+    async function generateInviteQrCode() {
+      const selectedType = document.querySelector('input[name="userInviteType"]:checked')?.value || '0';
+      const canvas = document.getElementById('userInviteQrCode');
+      const qrContainer = document.getElementById('userInviteQrContainer');
+      const message = document.getElementById('inviteQrMessage');
+      const button = document.getElementById('generateInviteQrCodeButton');
+      const saveButton = document.getElementById('saveInviteQrCodeButton');
+      if (!canvas || !qrContainer || !message || !button || !saveButton) return;
+
+      message.textContent = '';
+      qrContainer.hidden = true;
+      saveButton.hidden = true;
+      button.disabled = true;
+      try {
+        if (!window.QRCode) throw new Error('QRコード生成ライブラリを利用できません。');
+        const accessToken = liff.getAccessToken();
+        if (!accessToken) throw new Error('LINEユーザーを確認できませんでした。');
+        const form = new FormData();
+        form.append('Action', 'issue');
+        form.append('LiffAccessToken', accessToken);
+        form.append('EmployAuth', selectedType === '2' ? '2' : '0');
+
+        const response = await fetch(QR_TOKEN, { method: 'POST', body: form });
+        const result = await response.json();
+        if (!response.ok || !result.inviteToken) {
+          throw new Error(result.error || '招待トークンを発行できませんでした。');
+        }
+
+        const inviteUrl = new URL('https://miniapp.line.me/2009866730-52c8hXB5/');
+        inviteUrl.searchParams.set('page', 'UserRegistration');
+        inviteUrl.searchParams.set('EmployAuth', selectedType === '2' ? '2' : '0');
+        inviteUrl.searchParams.set('InviteToken', result.inviteToken);
+
+        await window.QRCode.toCanvas(canvas, inviteUrl.toString(), {
+          width: 240,
+          margin: 2,
+          errorCorrectionLevel: 'M'
+        });
+        qrContainer.hidden = false;
+        button.hidden = true;
+        saveButton.hidden = false;
+        const expiresAt = new Date(result.expiresAt);
+        message.textContent = `このQRコードは${expiresAt.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}まで有効です。`;
+      } catch (error) {
+        console.error('招待用QRコードの生成に失敗しました。', error);
+        message.textContent = error.message || 'QRコードを作成できませんでした。時間をおいて再度お試しください。';
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    // QRコードを消去し、作成ボタンを表示する
+    function clearInviteQrCode() {
+      const canvas = document.getElementById('userInviteQrCode');
+      const qrContainer = document.getElementById('userInviteQrContainer');
+      const message = document.getElementById('inviteQrMessage');
+      const button = document.getElementById('generateInviteQrCodeButton');
+      const saveButton = document.getElementById('saveInviteQrCodeButton');
+      if (!canvas || !qrContainer || !message || !button || !saveButton) return;
+      canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+      qrContainer.hidden = true;
+      button.hidden = false;
+      saveButton.hidden = true;
+      message.textContent = '';
+    }
+
+    // 生成済みQRコードをPNG画像として保存する
+    function saveInviteQrCode() {
+      const canvas = document.getElementById('userInviteQrCode');
+      const message = document.getElementById('inviteQrMessage');
+      const saveButton = document.getElementById('saveInviteQrCodeButton');
+      if (!canvas || !message || !saveButton || saveButton.hidden) return;
+
+      const selectedType = document.querySelector('input[name="userInviteType"]:checked')?.value || '0';
+      const userType = selectedType === '2' ? '管理ユーザー' : '一般ユーザー';
+      const fileName = `招待用QRコード_${userType}.png`;
+      try {
+        const imageUrl = canvas.toDataURL('image/png');
+        const base64Data = imageUrl.split(',')[1];
+        if (!base64Data) throw new Error('QRコード画像を作成できませんでした。');
+
+        const imageBytes = Uint8Array.from(atob(base64Data), character => character.charCodeAt(0));
+        const imageFile = typeof File === 'undefined'
+          ? null
+          : new File([imageBytes], fileName, { type: 'image/png' });
+        if (imageFile && navigator.share && navigator.canShare?.({ files: [imageFile] })) {
+          navigator.share({ files: [imageFile], title: fileName })
+            .catch(error => {
+              if (error.name !== 'AbortError') {
+                console.error('招待用QRコード画像の共有に失敗しました。', error);
+                message.textContent = 'QRコード画像を共有できませんでした。もう一度お試しください。';
+              }
+            });
+          return;
+        }
+
+        if (window.matchMedia('(pointer: coarse)').matches) {
+          const imageWindow = window.open(imageUrl, '_blank');
+          if (!imageWindow) throw new Error('QRコード画像を開けませんでした。');
+          message.textContent = '開いた画像を長押しして保存してください。';
+          return;
+        }
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = imageUrl;
+        downloadLink.download = fileName;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
+      } catch (error) {
+        console.error('招待用QRコード画像の保存に失敗しました。', error);
+        message.textContent = 'QRコード画像を保存できませんでした。もう一度お試しください。';
+      }
+    }
+
+    // 招待モーダルを開き、QRコードを未作成状態にする
     function openUserInviteModal() {
       const modal = document.getElementById('userInviteModal');
       if (!modal) return;
-      updateInviteLink();
+      clearInviteQrCode();
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('filter-modal-open');
     }
@@ -737,36 +1010,8 @@
       document.body.classList.remove('filter-modal-open');
     }
 
-    // 招待URLをクリップボードへコピーし、結果を画面に通知する
-    async function copyInviteLink() {
-      const inviteLink = document.getElementById('userInviteLink');
-      if (!inviteLink) return;
-
-      const text = inviteLink.value;
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(text);
-        } else {
-          inviteLink.focus();
-          inviteLink.select();
-          document.execCommand('copy');
-        }
-        const copyButton = document.querySelector('.invite-modal__copy');
-        if (copyButton) {
-          const originalText = copyButton.textContent;
-          copyButton.textContent = 'コピーしました';
-          setTimeout(() => {
-            copyButton.textContent = originalText;
-          }, 1200);
-        }
-      } catch (error) {
-        console.error('招待URLのコピーに失敗しました。', error);
-        alert('招待URLのコピーに失敗しました。');
-      }
-    }
-
     document.querySelectorAll('input[name="userInviteType"]').forEach((radio) => {
-      radio.addEventListener('change', updateInviteLink);
+      radio.addEventListener('change', clearInviteQrCode);
     });
 
     // ユーザーの権限に応じて招待ボタンの表示を切り替える
@@ -785,34 +1030,162 @@
     // ユーザー情報の取得
     // ----------------------
     let UserData = [];
+    let userDataLoaded = false;
     window.currentLineUserId = "";
 
     async function getUserData() {
-      // const profile = await liff.getProfile();
-      // window.currentLineUserId = profile.userId;
-
       try {
+        userDataLoaded = false;
+        const profile = await liff.getProfile();
+        window.currentLineUserId = profile.userId;
         await getDB_tk();
 
         const form = new FormData();
         form.append("action", "getUserData");
         form.append("db_token", API_TOKEN);
         form.append("db_ApiKey", DB_API_KEY);
-        form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
+        form.append("LineID", profile.userId);
 
         const response = await fetch(DEMO_API, { method: "POST", body: form });
+        if (!response.ok) {
+          throw new Error("ユーザー情報の取得に失敗しました。");
+        }
         const data = await response.json();
 
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           UserData = data;
+          userDataLoaded = true;
+          if (data.length === 0) {
+            updateUserInviteButtonVisibility();
+            return;
+          }
+
           const userData = UserData[0];
+          const officeNumbers = [...new Map(
+            UserData
+              .filter(item => item.EM_COMP_ID)
+              .map(item => [String(item.EM_COMP_ID), item])
+          ).values()];
+
+          const applyOfficeNumber = document.getElementById("applyOfficeNumber");
+          const applyOfficeName = document.getElementById("applyOfficeName");
+          const applyOfficeNumberOptions = document.getElementById("applyOfficeNumberOptions");
+          const applyOfficeNameOptions = document.getElementById("applyOfficeNameOptions");
+
+          if (applyOfficeNumberOptions) {
+            applyOfficeNumberOptions.innerHTML = "";
+            applyOfficeNameOptions.innerHTML = "";
+            officeNumbers.forEach(item => {
+              const numberOption = document.createElement("option");
+              numberOption.value = item.EM_COMP_ID || "";
+              applyOfficeNumberOptions.appendChild(numberOption);
+
+              const nameOption = document.createElement("option");
+              nameOption.value = item.COMP_NAME || "";
+              applyOfficeNameOptions.appendChild(nameOption);
+            });
+          }
+
+          const updateApplyOfficeFields = (source, force = false) => {
+            const targetCompId = applyOfficeNumber?.value.trim() || "";
+            const targetCompName = applyOfficeName?.value.trim() || "";
+            if (!targetCompId && !targetCompName) {
+              if (source === "id") applyOfficeName.value = "";
+              else applyOfficeNumber.value = "";
+              return;
+            }
+
+            const matches = officeNumbers.filter(item => {
+              const compId = String(item.EM_COMP_ID || "").trim();
+              const compName = String(item.COMP_NAME || "").trim();
+              if (source === "id") return compId.includes(targetCompId);
+              return compName.includes(targetCompName);
+            });
+
+            if (!matches.length) {
+              return;
+            }
+
+            const exactMatch = matches.find(item => {
+              const compId = String(item.EM_COMP_ID || "").trim();
+              const compName = String(item.COMP_NAME || "").trim();
+              if (source === "id") return compId === targetCompId;
+              return compName === targetCompName;
+            });
+
+            if (!force && !exactMatch && matches.length > 1) {
+              return;
+            }
+
+            const officeRecord = exactMatch || matches[0];
+            if (source === "id") {
+              applyOfficeName.value = officeRecord ? officeRecord.COMP_NAME || "" : "";
+            } else {
+              applyOfficeNumber.value = officeRecord ? String(officeRecord.EM_COMP_ID || "") : "";
+            }
+          };
+
+          if (applyOfficeNumber && applyOfficeName) {
+            applyOfficeNumber.value = userData.EM_COMP_ID || "";
+            const currentOfficeRecord = officeNumbers.find(item => String(item.EM_COMP_ID || "") === applyOfficeNumber.value.trim());
+            applyOfficeName.value = currentOfficeRecord ? currentOfficeRecord.COMP_NAME || "" : "";
+            applyOfficeNumber.addEventListener("input", () => updateApplyOfficeFields("id"));
+            applyOfficeNumber.addEventListener("change", () => updateApplyOfficeFields("id", true));
+            applyOfficeName.addEventListener("input", () => updateApplyOfficeFields("name"));
+            applyOfficeName.addEventListener("change", () => updateApplyOfficeFields("name", true));
+          }
+
+          const recruitmentCompId = document.getElementById("recruitmentCompId");
+          const recruitmentCompName = document.getElementById("recruitmentCompName");
+          const recruitmentOffices = officeNumbers.filter(item =>
+            String(item.EM_COMP_ID || "").trim() && String(item.COMP_NAME || "").trim()
+          );
+
           //募集ページの事業者番号、事業所名、担当者名を自動入力
-          document.getElementById("recruitmentCompId").value = userData.EM_COMP_ID || "";
-          document.getElementById("recruitmentCompName").value = userData.COMP_NAME || "";
-          document.getElementById("recruitmentManagerName").value =userData.NAME || "";
+          if (recruitmentCompId && recruitmentCompName) {
+            recruitmentOffices.forEach(item => {
+              const compId = String(item.EM_COMP_ID).trim();
+              const compName = String(item.COMP_NAME).trim();
+
+              const idOption = document.createElement("option");
+              idOption.value = compId;
+              idOption.textContent = compId;
+              recruitmentCompId.appendChild(idOption);
+
+              const nameOption = document.createElement("option");
+              nameOption.value = compName;
+              nameOption.textContent = compName;
+              nameOption.dataset.officeId = compId;
+              recruitmentCompName.appendChild(nameOption);
+            });
+
+            const syncRecruitmentOffice = (source) => {
+              if (source === "name") {
+                const selectedOption = recruitmentCompName.selectedOptions[0];
+                recruitmentCompId.value = selectedOption?.dataset.officeId || "";
+              } else {
+                const officeIndex = recruitmentOffices.findIndex(item =>
+                  String(item.EM_COMP_ID).trim() === recruitmentCompId.value
+                );
+                recruitmentCompName.selectedIndex = officeIndex + 1;
+              }
+              updateRecruitmentPromptButtonState();
+            };
+
+            recruitmentCompId.value = userData.EM_COMP_ID || "";
+            const currentOfficeIndex = recruitmentOffices.findIndex(item =>
+              String(item.EM_COMP_ID || "").trim() === recruitmentCompId.value.trim()
+            );
+            if (currentOfficeIndex >= 0) {
+              recruitmentCompId.selectedIndex = currentOfficeIndex + 1;
+              recruitmentCompName.selectedIndex = currentOfficeIndex + 1;
+            }
+            recruitmentCompId.addEventListener("change", () => syncRecruitmentOffice("id"));
+            recruitmentCompName.addEventListener("change", () => syncRecruitmentOffice("name"));
+          }
+          document.getElementById("recruitmentManagerName").value = userData.NAME || "";
           updateRecruitmentPromptButtonState();
-          //応募ページの担当者名を自動入力
-          document.getElementById("applydetailManagerName").value =userData.NAME || "";
+          document.getElementById("applydetailManagerName").value = userData.NAME || "";
           updateUserInviteButtonVisibility();
         } else {
           UserData = [];
@@ -821,6 +1194,7 @@
         }
       } catch (error) {
         UserData = [];
+        userDataLoaded = false;
         console.error("ユーザー情報の取得中にエラーが発生しました。", error);
       }      
     }
@@ -830,11 +1204,10 @@
     // ----------------------
     function validateUserRegistrationForm() {
       const requiredFields = [
-        { id: "userRegistrationCompId", label: "事業所番号" },
         { id: "userRegistrationName", label: "氏名" },
-        { id: "userRegistrationEmail", label: "メールアドレス" },
         { id: "userRegistrationPhone", label: "電話番号" },
-        { id: "userRegistrationPassword", label: "パスワード" }
+        { id: "userRegistrationPassword", label: "パスワード" },
+        { id: "userRegistrationPasswordConfirm", label: "パスワード（確認用）" }
       ];
 
       const validationMessage = document.getElementById("userRegistrationMessage");
@@ -851,8 +1224,38 @@
         return false;
       }
 
+      const password = document.getElementById("userRegistrationPassword").value;
+      const passwordConfirm = document.getElementById("userRegistrationPasswordConfirm");
+      if (password !== passwordConfirm.value) {
+        validationMessage.textContent = "パスワードが一致しません。";
+        validationMessage.hidden = false;
+        passwordConfirm.focus();
+        return false;
+      }
+
+      const officeRows = [...document.querySelectorAll("#userRegistrationOffices [data-registration-office]")];
+      for (const row of officeRows) {
+        const officeId = row.querySelector("[data-office-id]");
+        const officeName = row.querySelector("[data-office-name]");
+        if (!officeId.value.trim() || !officeName.value.trim()) {
+          validationMessage.textContent = "すべての事業所番号と事業所名を入力してください。";
+          validationMessage.hidden = false;
+          (officeId.value.trim() ? officeName : officeId).focus();
+          return false;
+        }
+      }
+
+      const officeIds = officeRows.map(row => row.querySelector("[data-office-id]").value.trim());
+      const duplicateOfficeIndex = officeIds.findIndex((officeId, index) => officeIds.indexOf(officeId) !== index);
+      if (duplicateOfficeIndex !== -1) {
+        validationMessage.textContent = "同じ事業所番号を重複して登録することはできません。";
+        validationMessage.hidden = false;
+        officeRows[duplicateOfficeIndex].querySelector("[data-office-id]").focus();
+        return false;
+      }
+
       const emailField = document.getElementById("userRegistrationEmail");
-      if (!emailField.checkValidity()) {
+      if (emailField.value.trim() && !emailField.checkValidity()) {
         validationMessage.textContent = "正しいメールアドレスを入力してください。";
         validationMessage.hidden = false;
         emailField.focus();
@@ -864,6 +1267,35 @@
       return true;
     }
 
+    const passwordConfirmField = document.getElementById("userRegistrationPasswordConfirm");
+    ["copy", "cut", "paste", "drop"].forEach(eventName => {
+      passwordConfirmField.addEventListener(eventName, event => event.preventDefault());
+    });
+
+    let registrationOfficeId = 0;
+
+    function addRegistrationOffice() {
+      const template = document.getElementById("userRegistrationOfficeTemplate");
+      const officeRow = template.content.firstElementChild.cloneNode(true);
+      const officeIdField = officeRow.querySelector("[data-office-id]");
+      const officeNameField = officeRow.querySelector("[data-office-name]");
+      registrationOfficeId += 1;
+      officeIdField.id = `userRegistrationCompId${registrationOfficeId}`;
+      officeNameField.id = `userRegistrationCompName${registrationOfficeId}`;
+      officeRow.querySelector("label").htmlFor = officeIdField.id;
+      officeRow.querySelectorAll("label")[1].htmlFor = officeNameField.id;
+      document.getElementById("userRegistrationOffices").appendChild(officeRow);
+      officeIdField.focus();
+    }
+
+    document.getElementById("addRegistrationOffice").addEventListener("click", addRegistrationOffice);
+    document.getElementById("userRegistrationOffices").addEventListener("click", event => {
+      const removeButton = event.target.closest("[data-remove-office]");
+      if (removeButton) {
+        removeButton.closest("[data-registration-office]").remove();
+      }
+    });
+
     // ----------------------
     // ユーザ情報をDBに登録する処理
     // ----------------------
@@ -874,7 +1306,7 @@
 
       const message = document.getElementById("userRegistrationMessage");
       const submitButton = document.querySelector("#userRegistrationForm button[type='submit']");
-      // const profile = await liff.getProfile();
+      const profile = await liff.getProfile();
 
       message.hidden = true;
       submitButton.disabled = true;
@@ -886,13 +1318,20 @@
         form.append("action", "registerUser");
         form.append("db_token", API_TOKEN);
         form.append("db_ApiKey", DB_API_KEY);
-        form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
-        form.append("CompID", document.getElementById("userRegistrationCompId").value.trim());
+        form.append("LineID", profile.userId);
+        form.append("Offices", JSON.stringify(
+          [...document.querySelectorAll("#userRegistrationOffices [data-registration-office]")]
+            .map(row => ({
+              compId: row.querySelector("[data-office-id]").value.trim(),
+              compName: row.querySelector("[data-office-name]").value.trim()
+            }))
+        ));
         form.append("Name", document.getElementById("userRegistrationName").value.trim());
         form.append("Email", document.getElementById("userRegistrationEmail").value.trim());
         form.append("Tel", document.getElementById("userRegistrationPhone").value.trim());
         form.append("Password", document.getElementById("userRegistrationPassword").value);
         form.append("EmployAuth", document.getElementById("EmployAuth").value);
+        form.append("InviteToken", document.getElementById("InviteToken").value);
 
         const response = await fetch(DEMO_API, { method: "POST", body: form });
         const result = await response.json();
@@ -901,28 +1340,30 @@
           throw new Error(result.error || "ユーザ情報の登録に失敗しました。");
         }
 
-        const mailResponse = await fetch(SendMail_API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            Email: document.getElementById("userRegistrationEmail").value.trim()
-          })
-        });
-        const mailResult = await mailResponse.json();
+        const emailAddress = document.getElementById("userRegistrationEmail").value.trim();
+        if (emailAddress) {
+          const mailResponse = await fetch(SendMail_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ Email: emailAddress })
+          });
+          const mailResult = await mailResponse.json();
 
-        const responseText = await response.text();
-        console.log("HTTPステータス:", response.status);
-        console.log("PHPからのレスポンス:", responseText);
+          if (!mailResponse.ok || !mailResult || mailResult.status !== "sent") {
+            message.textContent = "ユーザ情報は登録しましたが、メール送信に失敗しました。";
+            message.hidden = false;
+            return;
+          }
+        }
 
-        // if (!mailResponse.ok || !mailResult || mailResult.status !== "sent") {
-        //   message.textContent = "ユーザ情報は登録しましたが、メール送信に失敗しました。";
-        //   message.hidden = false;
-        //   return;
-        // }
-
-        message.textContent = "ユーザ情報を登録し、メールを送信しました。";
+        message.textContent = emailAddress
+          ? "ユーザ情報を登録し、メールを送信しました。"
+          : "ユーザ情報を登録しました。";
         message.hidden = false;
         document.getElementById("userRegistrationForm").reset();
+        document.querySelectorAll("#userRegistrationOffices [data-remove-office]").forEach(button => {
+          button.closest("[data-registration-office]").remove();
+        });
         await getUserData();
         go("UserRegistrationComplete");
       } catch (error) {
@@ -963,7 +1404,6 @@
         { id: "recruitmentCompId", label: "事業所番号" },
         { id: "recruitmentCompName", label: "事業所名" },
         { id: "recruitmentManagerName", label: "担当者名" },
-        { id: "recruitmentName", label: "利用者様(イニシャル)" },
         { id: "recruitmentCareLevel", label: "利用者様の要介護度" },
         { id: "recruitmentGender", label: "性別" },
         { id: "recruitmentAge", label: "年齢" }
@@ -982,7 +1422,7 @@
       }
 
       const field = document.getElementById(missingField.id);
-      validationMessage.textContent = `${missingField.label}を入力してください。`;
+      validationMessage.textContent = `${missingField.label}${field.tagName === "SELECT" ? "を選択してください。" : "を入力してください。"}`;
       validationMessage.hidden = false;
       field.focus();
       return false;
@@ -994,7 +1434,6 @@
         "recruitmentCompId",
         "recruitmentCompName",
         "recruitmentManagerName",
-        "recruitmentName",
         "recruitmentCareLevel",
         "recruitmentGender",
         "recruitmentAge"
@@ -1017,7 +1456,6 @@
       "recruitmentCompId",
       "recruitmentCompName",
       "recruitmentManagerName",
-      "recruitmentName",
       "recruitmentCareLevel",
       "recruitmentGender",
       "recruitmentAge"
@@ -1034,7 +1472,7 @@
       if (!validateRecruitmentForm()) return;
 
       await getDB_tk();
-      // const profile = await liff.getProfile();
+      const profile = await liff.getProfile();
 
       const recruitmentCompIdElement = document.getElementById("recruitmentCompId");
       const recruitmentCompNameElement = document.getElementById("recruitmentCompName");
@@ -1057,14 +1495,16 @@
       form.append("recruitmentCompId", recruitmentCompIdElement.value);
       form.append("recruitmentCompName", recruitmentCompNameElement.value);
       form.append("recruitmentManagerName", recruitmentManagerNameElement.value);
-      form.append("recruitmentName", recruitmentNameElement.value);
+      const recruitmentName = recruitmentNameElement.value.trim() || "(仮)Y.T";
+      recruitmentNameElement.value = recruitmentName;
+      form.append("recruitmentName", recruitmentName);
       form.append("recruitmentCareLevel", recruitmentCareLevelElement.value);
       form.append("recruitmentGender", recruitmentGenderElement.value);
       form.append("recruitmentAge", recruitmentAgeElement.value);
       form.append("recruitmentStartDateTime", recruitmentStartDateElement.value);
       form.append("recruitmentFreeText", recruitmentFreeTextElement.value);
       form.append("recruitmentResultOutput", recruitmentResultOutput.value);
-      form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
+      form.append("LineID", profile.userId);
 
       const response = await fetch(DEMO_API, { method: "POST", body: form });
       const j = await response.json();
@@ -1088,12 +1528,13 @@
     // ----------------------
     // 募集情報をDBから取得して画面用データとして保持する処理
     // ----------------------
-    async function loadRecruitmentData() {
+    async function loadRecruitmentData(includeEnded = selectedIncludeEndedRecruitments) {
       try {
         await getDB_tk();
 
         const form = new FormData();
         form.append("action", "BosyuuIchiranHyouzi");
+        form.append("includeEnded", includeEnded ? "1" : "0");
         form.append("db_token", API_TOKEN);
         form.append("db_ApiKey", DB_API_KEY);
 
@@ -1102,6 +1543,7 @@
 
         if (Array.isArray(data)) {
           recruitmentData = data;
+          recruitmentDataIncludesEnded = includeEnded;
         } else {
           console.error("募集情報の取得に失敗しました。", data);
         }
@@ -1143,17 +1585,45 @@
       return '-';
     }
 
+    function isEndedRecruitment(item) {
+      return String(item.FLAG) === '1' || String(item.DELETE_FLAG) === '1';
+    }
+
     let selectedFacilityFilter = 'all';
     let selectedApplicationFilter = 'all';
+    let selectedIncludeEndedRecruitments = false;
+    let recruitmentDataIncludesEnded = false;
     let selectedRecruitmentSort = 'recruitment';
     let appliedRecruitmentData = [];
     let appliedRecruitmentIds = new Set();
     let selectedRecruitmentItem = null;
+    let recruitmentFilterModalMode = 'filter';
+
+    document.getElementById('applicationFilter').addEventListener('change', event => {
+      selectedApplicationFilter = event.currentTarget.checked ? 'applied' : 'all';
+      renderRecruitmentList();
+    });
+
+    document.getElementById('endedRecruitmentFilter').addEventListener('change', event => {
+      selectedIncludeEndedRecruitments = event.currentTarget.checked;
+      loadRecruitmentData(selectedIncludeEndedRecruitments);
+    });
 
     // 募集一覧の絞り込みモーダルを開く
-    function openRecruitmentFilter() {
+    function openRecruitmentFilter(mode = 'filter') {
       const modal = document.getElementById('recruitmentFilterModal');
       if (!modal) return;
+      recruitmentFilterModalMode = mode;
+      buildFacilityFilterOptions();
+      buildRecruitmentApplicationFilterOptions();
+      buildEndedRecruitmentFilterOptions();
+      buildRecruitmentSortOptions();
+      modal.querySelectorAll('[data-recruitment-filter-section]').forEach(section => {
+        section.hidden = section.dataset.recruitmentFilterSection !== mode;
+      });
+      document.getElementById('recruitmentFilterTitle').textContent = mode === 'sort' ? '並べ替え' : '絞り込み';
+      document.getElementById('recruitmentFilterClearButton').textContent =
+        mode === 'sort' ? '並べ替えを解除' : '絞り込みを解除';
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('filter-modal-open');
     }
@@ -1168,20 +1638,23 @@
 
     // 募集一覧の絞り込み条件と並べ替えを初期状態に戻す
     function clearRecruitmentFilter() {
-      selectedFacilityFilter = 'all';
-      selectedApplicationFilter = 'all';
-      selectedRecruitmentSort = 'recruitment';
+      if (recruitmentFilterModalMode === 'sort') {
+        selectedRecruitmentSort = 'recruitment';
+      } else {
+        selectedFacilityFilter = 'all';
+      }
       renderRecruitmentList();
+      openRecruitmentFilter(recruitmentFilterModalMode);
     }
 
-    // モーダルで選択された絞り込み条件と並べ替えを一覧に反映する
-    function applyRecruitmentFilter() {
-      const facilityFilter = document.getElementById('facilityFilter');
-      const applicationFilter = document.getElementById('applicationFilter');
-      const sort = document.getElementById('recruitmentSort');
-      selectedFacilityFilter = facilityFilter ? facilityFilter.value : 'all';
-      selectedApplicationFilter = applicationFilter?.checked ? 'applied' : 'all';
-      selectedRecruitmentSort = sort ? sort.value : 'recruitment';
+    async function applyRecruitmentFilter() {
+      const sortOnly = recruitmentFilterModalMode === 'sort';
+      if (sortOnly) {
+        selectedRecruitmentSort = document.getElementById('recruitmentSort').value;
+      } else {
+        selectedFacilityFilter = document.getElementById('facilityFilter').value;
+      }
+
       renderRecruitmentList();
       closeRecruitmentFilter();
     }
@@ -1244,10 +1717,14 @@
         filter.value = 'all';
       }
 
-      filter.onchange = () => {
-        selectedFacilityFilter = filter.value;
-        renderRecruitmentList();
-      };
+    }
+
+    // 終了済み募集を含める状態を反映し、変更時に検索条件を更新する
+    function buildEndedRecruitmentFilterOptions() {
+      const filter = document.getElementById('endedRecruitmentFilter');
+      if (!filter) return;
+
+      filter.checked = selectedIncludeEndedRecruitments;
     }
 
     // 応募済みチェックの状態を反映し、変更時に一覧を更新する
@@ -1256,10 +1733,6 @@
       if (!filter) return;
 
       filter.checked = selectedApplicationFilter === 'applied';
-      filter.onchange = () => {
-        selectedApplicationFilter = filter.checked ? 'applied' : 'all';
-        renderRecruitmentList();
-      };
     }
 
     // 選択された並べ替え条件をセレクトボックスに反映し、変更時に一覧を更新する
@@ -1268,10 +1741,23 @@
       if (!sort) return;
 
       sort.value = selectedRecruitmentSort;
-      sort.onchange = () => {
-        selectedRecruitmentSort = sort.value;
-        renderRecruitmentList();
+    }
+
+    function updateRecruitmentControlLabels() {
+      const sortLabels = {
+        recruitment: '募集順',
+        careLevel: '介護レベル順',
+        startDate: '利用開始予定日順'
       };
+      document.getElementById('recruitmentSortTriggerLabel').textContent =
+        sortLabels[selectedRecruitmentSort] || sortLabels.recruitment;
+
+      const activeFilterCount = Number(selectedFacilityFilter !== 'all')
+        + Number(selectedApplicationFilter === 'applied')
+        + Number(selectedIncludeEndedRecruitments);
+      const countBadge = document.getElementById('recruitmentFilterCount');
+      countBadge.textContent = activeFilterCount;
+      countBadge.hidden = activeFilterCount === 0;
     }
 
     // 募集順、介護レベル順、利用開始予定日順のいずれかで募集データを並べ替える
@@ -1303,7 +1789,9 @@
       container.innerHTML = '';
       buildFacilityFilterOptions();
       buildRecruitmentApplicationFilterOptions();
+      buildEndedRecruitmentFilterOptions();
       buildRecruitmentSortOptions();
+      updateRecruitmentControlLabels();
 
       const sourceData = selectedApplicationFilter === 'applied'
         ? appliedRecruitmentData
@@ -1323,13 +1811,18 @@
 
       filteredData.forEach(item => {
         const card = document.createElement('div');
-        card.className = 'recruitment-card';
         const isApplied = appliedRecruitmentIds.has(String(item.REQ_ID));
+        const isEnded = isEndedRecruitment(item);
+        card.className = `recruitment-card${isEnded ? ' recruitment-card--ended' : ''}${isApplied ? ' recruitment-card--applied' : ''}`;
 
         // 募集情報一覧のカードに表示する内容を設定
         card.innerHTML = `
+          ${isApplied
+            ? '<span class="recruitment-card__status recruitment-card__status--applied">応募済み</span>'
+            : isEnded
+              ? '<span class="recruitment-card__status">募集終了</span>'
+              : ''}
           <div class="card-body">
-            ${isApplied ? '<div class="card-row"><span class="card-label">応募状況:</span><span class="card-value">応募済み</span></div>' : ''}
             <div class="card-row">
               <span class="card-label">施設名:</span>
               <span class="card-value">${item.COMP_NAME || '-'}</span>
@@ -1401,7 +1894,14 @@
       const isOwnRecruitment = currentUserLineId && currentUserLineId === recruitmentCreatorLineId;
       const isApplied = appliedRecruitmentIds.has(String(item.REQ_ID));
 
-      if (isOwnRecruitment) {
+      if (isEndedRecruitment(item) && !isApplied) {
+        actionButton.textContent = '募集終了';
+        actionButton.disabled = true;
+        actionButton.classList.remove('btn-reset');
+        actionButton.classList.add('btn-submit');
+        actionButton.onclick = null;
+        actionButton.setAttribute('aria-label', '募集終了');
+      } else if (isOwnRecruitment) {
         actionButton.textContent = '募集をキャンセル';
         actionButton.disabled = false;
         actionButton.classList.remove('btn-submit');
@@ -1435,14 +1935,14 @@
       document.getElementById('BosyuusyaLineId').value = item.CREATE_BY;
       document.getElementById('applydetailFreeText').value = item.COMMENT || '-';
 
-      document.getElementById('detailFacilityName').textContent = item.COMP_NAME;
-      document.getElementById('detailTantousyaName').textContent = item.NAME;
-      document.getElementById('detailCompId').textContent = item.COMP_ID;
-      document.getElementById('detailInitialName').textContent = item.USER_NAME;
-      document.getElementById('detailCareLevel').textContent = formatCARE_LEVEL(item.CARE_LEVEL);
-      document.getElementById('detailAge').textContent = item.AGE;
-      document.getElementById('detailGender').textContent = formatGender(item.SEX);
-      document.getElementById('detailStartDate').textContent = formatPlannedDate(item.START);
+      document.getElementById('detailFacilityName').textContent = item.COMP_NAME || '-';
+      document.getElementById('detailTantousyaName').textContent = item.NAME || '-';
+      document.getElementById('detailCompId').textContent = item.COMP_ID || '-';
+      document.getElementById('detailInitialName').textContent = item.USER_NAME || '-';
+      document.getElementById('detailCareLevel').textContent = formatCARE_LEVEL(item.CARE_LEVEL) || '-';
+      document.getElementById('detailAge').textContent = item.AGE ?? '-';
+      document.getElementById('detailGender').textContent = formatGender(item.SEX) || '-';
+      document.getElementById('detailStartDate').textContent = formatPlannedDate(item.START) || '-';
       document.getElementById('detailFreeText').textContent = item.COMMENT || '-';
       updateRecruitmentDetailActionButton(item);
 
@@ -1480,13 +1980,13 @@
 
       const recruitmentID = document.getElementById("detailRecruitmentId");
       const form = new FormData();
-      // const profile = await liff.getProfile();
+      const profile = await liff.getProfile();
 
       form.append("action", "REQ_CANCEL");
       form.append("db_token", API_TOKEN);
       form.append("db_ApiKey", DB_API_KEY);
       form.append("recruitmentID", recruitmentID.value);
-      form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
+      form.append("LineID", profile.userId);
 
       const response = await fetch(DEMO_API, { method: "POST", body: form });
       const j = await response.json();
@@ -1539,7 +2039,7 @@
     async function regiApply() {
       await getDB_tk();
 
-      // const profile = await liff.getProfile();
+      const profile = await liff.getProfile();
       const recruitmentIdInput = document.getElementById("applyRecruitmentId");
       const bosyuusyaLineIdInput = document.getElementById("BosyuusyaLineId");
       const applyOfficeNumberElement = document.getElementById("applyOfficeNumber");
@@ -1553,7 +2053,7 @@
       form.append("recruitmentID", recruitmentIdInput.value);
       form.append("ManagerName", managerNameInput.value);
       form.append("applyOfficeNumber", applyOfficeNumberElement.value);
-      form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
+      form.append("LineID", profile.userId);
 
       const response = await fetch(DEMO_API, { method: "POST", body: form });
       const j = await response.json();
@@ -1581,12 +2081,12 @@
     async function loadAppliedRecruitmentData() {
       try {
         await getDB_tk();
-        // const profile = await liff.getProfile();
+        const profile = await liff.getProfile();
         const form = new FormData();
         form.append("action", "MyOuboRecruitmentList");
         form.append("db_token", API_TOKEN);
         form.append("db_ApiKey", DB_API_KEY);
-        form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
+        form.append("LineID", profile.userId);
 
         const response = await fetch(DEMO_API, { method: "POST", body: form });
         const data = await response.json();
@@ -1609,13 +2109,14 @@
     async function loadApplyData() {
       try {
         await getDB_tk();
-        // const profile = await liff.getProfile();
+        const profile = await liff.getProfile();
 
         const form = new FormData();
         form.append("action", "OuboIchiranHyouzi");
         form.append("db_token", API_TOKEN);
         form.append("db_ApiKey", DB_API_KEY);
-        form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
+        form.append("LineID", profile.userId);
+        form.append("showMatched", showMatchedApprovalApplications ? "1" : "0");
 
         const response = await fetch(DEMO_API, { method: "POST", body: form });
         const data = await response.json();
@@ -1635,11 +2136,28 @@
     let selectedApprovalItem = null;
     let selectedApprovalRecruitmentFilter = '';
     let selectedApprovalSort = 'application';
+    let showMatchedApprovalApplications = false;
+    let approvalFilterModalMode = 'filter';
+
+    document.getElementById('approvalMatchedFilter').addEventListener('change', async event => {
+      showMatchedApprovalApplications = event.currentTarget.checked;
+      await loadApplyData();
+      renderApplyList();
+    });
 
     // 受入れ応募一覧の絞り込みモーダルを開く
-    function openApprovalFilter() {
+    function openApprovalFilter(mode = 'filter') {
       const modal = document.getElementById('approvalFilterModal');
       if (!modal) return;
+      approvalFilterModalMode = mode;
+      buildApprovalFacilityFilterOptions();
+      buildApprovalSortOptions();
+      modal.querySelectorAll('[data-approval-filter-section]').forEach(section => {
+        section.hidden = section.dataset.approvalFilterSection !== mode;
+      });
+      document.getElementById('approvalFilterTitle').textContent = mode === 'sort' ? '並べ替え' : '絞り込み';
+      document.getElementById('approvalFilterClearButton').textContent =
+        mode === 'sort' ? '並べ替えを解除' : '絞り込みを解除';
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('filter-modal-open');
     }
@@ -1652,14 +2170,44 @@
       document.body.classList.remove('filter-modal-open');
     }
 
+    async function clearApprovalFilter() {
+      if (approvalFilterModalMode === 'sort') {
+        selectedApprovalSort = 'application';
+      } else {
+        selectedApprovalRecruitmentFilter = '';
+        if (showMatchedApprovalApplications) {
+          showMatchedApprovalApplications = false;
+          document.getElementById('approvalMatchedFilter').checked = false;
+          await loadApplyData();
+        }
+      }
+      renderApplyList();
+      openApprovalFilter(approvalFilterModalMode);
+    }
+
     // モーダルで選択された募集と並べ替え条件を応募一覧に反映する
-    function applyApprovalFilter() {
-      const filter = document.getElementById('approvalFacilityFilter');
-      const sort = document.getElementById('approvalSort');
-      selectedApprovalRecruitmentFilter = filter ? filter.value : '';
-      selectedApprovalSort = sort ? sort.value : 'application';
+    async function applyApprovalFilter() {
+      if (approvalFilterModalMode === 'sort') {
+        selectedApprovalSort = document.getElementById('approvalSort').value;
+      } else {
+        selectedApprovalRecruitmentFilter = document.getElementById('approvalFacilityFilter').value;
+      }
       renderApplyList();
       closeApprovalFilter();
+    }
+
+    function updateApprovalControlLabels() {
+      const sortLabels = {
+        application: '応募順',
+        facility: '施設名順'
+      };
+      document.getElementById('approvalSortTriggerLabel').textContent =
+        sortLabels[selectedApprovalSort] || sortLabels.application;
+      const activeFilterCount = Number(Boolean(selectedApprovalRecruitmentFilter))
+        + Number(showMatchedApprovalApplications);
+      const countBadge = document.getElementById('approvalFilterCount');
+      countBadge.textContent = activeFilterCount;
+      countBadge.hidden = activeFilterCount === 0;
     }
 
     // 応募一覧の絞り込みに使う募集候補をセレクトボックスに設定する
@@ -1674,7 +2222,7 @@
       ).values()].sort((a, b) => String(a.REQ_REQ_ID).localeCompare(String(b.REQ_REQ_ID), 'ja'));
       const recruitmentIds = recruitmentItems.map(item => String(item.REQ_REQ_ID));
 
-      filter.innerHTML = '';
+      filter.innerHTML = '<option value="">すべて</option>';
 
       recruitmentItems.forEach(item => {
         const option = document.createElement('option');
@@ -1683,11 +2231,11 @@
         filter.appendChild(option);
       });
 
-      if (recruitmentIds.includes(selectedApprovalRecruitmentFilter)) {
+      if (selectedApprovalRecruitmentFilter && recruitmentIds.includes(selectedApprovalRecruitmentFilter)) {
         filter.value = selectedApprovalRecruitmentFilter;
       } else {
-        selectedApprovalRecruitmentFilter = recruitmentIds[0] || '';
-        filter.value = selectedApprovalRecruitmentFilter;
+        selectedApprovalRecruitmentFilter = '';
+        filter.value = '';
       }
 
       filter.onchange = () => {
@@ -1703,6 +2251,12 @@
       sort.value = selectedApprovalSort;
     }
 
+    function buildApprovalMatchedFilterOption() {
+      const checkbox = document.getElementById('approvalMatchedFilter');
+      if (!checkbox) return;
+      checkbox.checked = showMatchedApprovalApplications;
+    }
+
     // ----------------------
     // 応募一覧を画面に描画する処理(モーダル)
     // ----------------------
@@ -1711,9 +2265,12 @@
       container.innerHTML = '';
       buildApprovalFacilityFilterOptions();
       buildApprovalSortOptions();
+      buildApprovalMatchedFilterOption();
+      updateApprovalControlLabels();
 
       const filteredData = Array.isArray(applyData)
         ? applyData.filter(item => {
+            if (!selectedApprovalRecruitmentFilter) return true;
             return String(item.REQ_REQ_ID || '') === String(selectedApprovalRecruitmentFilter);
           })
         : [];
@@ -1729,10 +2286,12 @@
 
       filteredData.forEach(item => {
         const card = document.createElement('div');
-        card.className = 'recruitment-card';
+        const isMatched = Number(item.RES_MATCHING ?? item.MATCHING ?? 0) === 1;
+        card.className = `recruitment-card${isMatched ? ' recruitment-card--matched' : ''}`;
         card.onclick = () => openApprovalDetail(item);
 
         card.innerHTML = `
+          ${isMatched ? '<span class="recruitment-card__status">マッチング済み</span>' : ''}
           <input type="hidden" id="ApprovalRecruitmentId" name="ApprovalRecruitmentId" value="${item.REQ_REQ_ID}" />
           <div class="card-header"> 
             <h3 class="card-title">${item.SISETU_COMP_NAME || '-'}</h3>
@@ -1754,6 +2313,18 @@
       });
     }
 
+    function updateApprovalActionButton(item) {
+      const button = document.getElementById('approvalConfirmButton');
+      if (!button) return;
+
+      const isMatched = Number(item?.RES_MATCHING ?? item?.MATCHING ?? 0) === 1;
+      button.disabled = isMatched;
+      button.textContent = isMatched ? 'マッチング済み' : '承認する';
+      button.classList.toggle('btn-submit', !isMatched);
+      button.classList.toggle('btn-reset', isMatched);
+      button.onclick = isMatched ? null : () => changeFlag();
+    }
+
     // ----------------------
     // 選択した応募者の詳細ページを表示する処理
     // ----------------------
@@ -1763,11 +2334,13 @@
       document.getElementById('ApprovalDetailRecruitmentId').value = item.REQ_ID;
       document.getElementById('ApprovalDetailLineId').value = item.OUBOSYA_LINE_ID;
 
-      document.getElementById('approvalDetailFacilityId').textContent = item.SISETU_COMP_ID;
-      document.getElementById('approvalDetailFacilityName').textContent = item.SISETU_COMP_NAME;
-      document.getElementById('approvalDetailTantousyaName').textContent = item.RES_NAME;
-      document.getElementById('approvalDetailPhoneNumber').textContent = item.PHONE;
-      document.getElementById('approvalDetailAddress').textContent = item.ADDRESS1 + item.ADDRESS2 + item.ADDRESS3;
+      const detailAddress = [item.ADDRESS1, item.ADDRESS2, item.ADDRESS3].filter(Boolean).join('') || '-';
+      document.getElementById('approvalDetailFacilityId').textContent = item.SISETU_COMP_ID || '-';
+      document.getElementById('approvalDetailFacilityName').textContent = item.SISETU_COMP_NAME || '-';
+      document.getElementById('approvalDetailTantousyaName').textContent = item.RES_NAME || '-';
+      document.getElementById('approvalDetailPhoneNumber').textContent = item.PHONE || '-';
+      document.getElementById('approvalDetailAddress').textContent = detailAddress;
+      updateApprovalActionButton(item);
 
       go('ApprovalDetail');
     }
@@ -1799,10 +2372,20 @@
     // 応募者を承認し、募集・応募テーブルのフラグを更新する
     // ----------------------
     async function changeFlag() {
+      const isMatched = Number(selectedApprovalItem?.RES_MATCHING ?? selectedApprovalItem?.MATCHING ?? 0) === 1;
+      if (isMatched) {
+        const button = document.getElementById('approvalConfirmButton');
+        if (button) {
+          button.disabled = true;
+          button.textContent = 'マッチング済み';
+        }
+        return;
+      }
+
       await getDB_tk();
 
       const form = new FormData();
-      // const profile = await liff.getProfile();
+      const profile = await liff.getProfile();
       const ApprovalDetailRecruitmentId = document.getElementById("ApprovalDetailRecruitmentId");
       const ApprovalDetailLineId = document.getElementById("ApprovalDetailLineId");
 
@@ -1810,7 +2393,7 @@
       form.append("db_token", API_TOKEN);
       form.append("db_ApiKey", DB_API_KEY);
       form.append("recruitmentID", ApprovalDetailRecruitmentId.value);
-      form.append("LineID", 'Ufdd5187b1a7dff552d7c412c90d49edb');
+      form.append("LineID", profile.userId);
 
       const response = await fetch(DEMO_API, { method: "POST", body: form });
       const j = await response.json();
